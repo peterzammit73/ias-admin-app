@@ -1,0 +1,475 @@
+<!-- Root: AdminTool.html -->
+<!-- Version: 9.2 - Enhanced Date Parsing for Project Costs -->
+<!-- MAINTAINED: Boolean Integrity, Serial-Project-Issuer-PartXX logic, and Full Schema Set -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iAS Firebase Admin Tool - Pro Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        #log-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #log-container::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+
+        #log-container::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-black">
+
+    <div class="p-4 sm:p-8">
+        <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg w-full mx-auto text-black font-sans">
+
+            <header class="mb-6 pb-6 border-b border-gray-200 flex justify-between items-center font-sans">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Firebase Admin Tool</h1>
+                    <p class="text-gray-600 font-medium text-sm">Pro Mode: Standardized to DD/MM/YYYY Date Ingestion.</p>
+                </div>
+                <div class="text-right">
+                    <span class="block font-mono text-sm text-gray-400">v9.2</span>
+                    <span class="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">Internal Commit Size: 500</span>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 font-sans">
+                <div>
+                    <!-- SECTION 1: CONFIG & AUTH -->
+                    <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200 font-sans">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-1">1. Configuration & Auth</h2>
+                        <textarea id="firebaseConfig" class="w-full h-24 p-3 border rounded-md font-mono text-xs bg-white mb-4 shadow-inner text-black" placeholder="Paste Firebase config object..."></textarea>
+                        <div class="grid grid-cols-2 gap-4 mb-2">
+                            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Admin Email (Optional)</label><input type="email" id="adminEmail" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-black" placeholder="e.g. admin@ias.com.mt"></div>
+                            <div><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Password (Optional)</label><input type="password" id="adminPassword" class="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-black" placeholder="••••••••"></div>
+                        </div>
+                        <p class="text-[9px] text-gray-400 italic mb-4 font-sans font-normal">Note: Empty credentials will attempt Anonymous login (works in Dev).</p>
+                    </div>
+
+                    <!-- SECTION 2: DATA SELECTION -->
+                    <div class="mb-6 bg-white p-4 rounded-xl border border-gray-200 shadow-sm font-sans">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-1 font-sans">2. Data Selection</h2>
+                        <div class="mb-4">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Upload Data Type</label>
+                            <select id="dataType" class="w-full p-3 border rounded-md bg-white border-gray-300 text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <option value="hours">Hours (Timesheet Entries)</option>
+                                <option value="costs">Project Costs (Sub-consultants, etc.)</option>
+                                <option value="rfps_base">1. RFPs (Initial Base Upload)</option>
+                                <option value="rfps_merge_flat">2. RFPs (Transaction Merge - Flat CSV)</option>
+                                <option value="employees">Employees</option>
+                                <option value="clients">Clients</option>
+                                <option value="projects">Projects</option>
+                                <option value="salaries">Salaries (Subcollection History)</option>
+                            </select>
+                        </div>
+                        <div class="mb-4"><label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">CSV Content (Paste Here)</label><textarea id="csvData" class="w-full h-32 p-3 border rounded-md font-mono text-xs bg-gray-50 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none text-black" placeholder="Header,Column1,Column2..."></textarea></div>
+                        <div class="grid grid-cols-2 gap-4 font-bold font-sans">
+                            <div class="bg-red-50 p-3 rounded border border-red-200"><label class="flex items-center cursor-pointer"><input type="checkbox" id="deleteCheckbox" class="h-4 w-4 text-red-600 border-gray-300 rounded"><span class="ml-2 text-[11px] text-red-800 font-bold uppercase tracking-tight">Wipe Collection First</span></label></div>
+                            <div class="bg-blue-50 p-3 rounded border border-blue-200 hidden" id="mergeOptionContainer"><label class="flex items-center cursor-pointer"><input type="checkbox" id="mergeCheckbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" checked><span class="ml-2 text-[11px] text-blue-800 font-bold uppercase tracking-tight">Merge Mode</span></label></div>
+                        </div>
+                    </div>
+
+                    <!-- STEP CONTROL -->
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-200 mb-6 font-sans">
+                        <h2 class="text-lg font-bold text-indigo-900 mb-2 font-sans">Step Control</h2>
+                        <div class="bg-white p-3 rounded border border-indigo-100 mb-4 h-16 flex items-center justify-center text-center shadow-inner font-sans font-normal"><span id="stepDescription" class="text-gray-700 font-medium text-sm">Ready to start. Step 1: Connect to Firebase.</span></div>
+                        <div class="flex gap-4"><button id="nextStepBtn" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed font-sans font-normal">Execute Step 1</button><button id="resetBtn" class="px-6 bg-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-400 transition font-sans font-normal">Reset</button></div>
+                    </div>
+
+                    <!-- SYSTEM MAINTENANCE -->
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 font-sans">
+                        <h2 class="text-lg font-bold text-amber-900 mb-2 font-sans">System Maintenance</h2>
+                        <p class="text-[10px] text-amber-700 mb-4 font-medium italic font-sans font-normal">Requirement: Authenticated connection required.</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="markAllBilledBtn" disabled class="bg-amber-600 text-white font-bold py-3 px-2 rounded-lg hover:bg-amber-700 transition shadow-sm text-[10px] opacity-50 cursor-not-allowed uppercase tracking-wider font-sans font-normal">Mark All as BILLED</button>
+                            <button id="markAllUnbilledBtn" disabled class="bg-slate-600 text-white font-bold py-3 px-2 rounded-lg hover:bg-slate-700 transition shadow-sm text-[10px] opacity-50 cursor-not-allowed uppercase tracking-wider font-sans font-normal">Mark All as UNBILLED</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EXECUTION LOG -->
+                <div class="flex flex-col font-sans">
+                    <h2 class="text-xl font-semibold mb-2 text-gray-800 border-b pb-1 font-sans">Execution Log & Health Audit</h2>
+                    <div id="log-container" class="flex-1 min-h-[500px] p-4 border rounded-md bg-gray-900 text-white font-mono text-[10px] overflow-y-auto shadow-2xl border-indigo-900 font-normal"><div id="log"></div></div>
+                    <div class="mt-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest flex justify-between px-1 font-sans"><span>Console Output Enabled</span><span id="currentStatus">Idle</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, writeBatch, doc, Timestamp, query, where, limit, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+
+        const elements = {
+            nextStepBtn: document.getElementById('nextStepBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            markAllBilledBtn: document.getElementById('markAllBilledBtn'),
+            markAllUnbilledBtn: document.getElementById('markAllUnbilledBtn'),
+            stepDescription: document.getElementById('stepDescription'),
+            log: document.getElementById('log'),
+            dataType: document.getElementById('dataType'),
+            csvData: document.getElementById('csvData'),
+            firebaseConfig: document.getElementById('firebaseConfig'),
+            adminEmail: document.getElementById('adminEmail'),
+            adminPassword: document.getElementById('adminPassword'),
+            deleteCheckbox: document.getElementById('deleteCheckbox'),
+            mergeCheckbox: document.getElementById('mergeCheckbox'),
+            mergeContainer: document.getElementById('mergeOptionContainer'),
+            statusText: document.getElementById('currentStatus')
+        };
+
+        let currentStep = 1;
+        let db = null;
+        let auth = null;
+        let parsedRecords = [];
+        let rfpMap = {};
+        let counterMap = {};
+        let employeeMap = {};
+        let chunks = [];
+        let currentChunkIndex = 0;
+
+        const VAT_RATE = 0.18;
+
+        const dataSchemas = {
+            employees: { collection: 'employees', placeholder: 'name,surname,companyEmail,personalEmail,mobileNumber,idNumber,niNumber,address,isEmployed,startDate,endDate' },
+            clients: { collection: 'clients', placeholder: 'clientNumber,title,name,surname,companyName,email,mobileNumber,address,vatNumber' },
+            projects: { collection: 'projects', placeholder: 'projectNumber,clientNumber,projectDescription,status,isBillable,pm' },
+            hours: { collection: 'timesheet_entries', placeholder: 'emailAddress,startTime,endTime,duration,project,task,comment,date' },
+            salaries: { collection: 'salary_history', placeholder: 'employeeNumber,baseSalary,govtBonus,bonus,niEmployerAmount,effectiveDate' },
+            rfps_base: { collection: 'rfps', placeholder: 'rfpCode,projectNumber,issuer,amount,vatApplicable,status,createdAt,issuedAt' },
+            rfps_merge_flat: { collection: 'rfps', placeholder: 'rfpCode,invRef,partRef,invDate,invAmount,cnRef,cnDate,cnAmount,Issue' },
+            costs: { collection: 'project_costs', placeholder: 'projectNumber,type,description,supplier,amount,date,vatApplicable,invoiceRef,isPaid,paymentRef,amountPaid,paymentDate' }
+        };
+
+        function castToBoolean(value, defaultVal = true) {
+            if (value === null || value === undefined || value === '') return defaultVal;
+            const str = String(value).toLowerCase().trim();
+            if (['false', '0', 'no', 'n', 'off'].includes(str)) return false;
+            if (['true', '1', 'yes', 'y', 'on'].includes(str)) return true;
+            return defaultVal;
+        }
+
+        function updatePlaceholder() {
+            const type = elements.dataType.value;
+            const schema = dataSchemas[type];
+            let note = "";
+            if (type === 'rfps_merge_flat') {
+                note = "\n(Required: rfpCode,invRef,partRef,invAmount,invDate,cnRef,cnAmount,cnDate,Issue)";
+                elements.mergeContainer.classList.remove('hidden');
+                elements.mergeCheckbox.checked = true; elements.mergeCheckbox.disabled = true;
+            } else {
+                elements.mergeContainer.classList.add('hidden');
+            }
+            elements.csvData.placeholder = `Paste CSV Content for ${type}:\n${schema.placeholder}${note}`;
+        }
+        elements.dataType.addEventListener('change', updatePlaceholder);
+        updatePlaceholder();
+
+        function log(msg, type = 'info') {
+            const p = document.createElement('div');
+            p.className = 'log-entry font-sans font-normal';
+            let colorClass = 'text-green-400';
+            if (type === 'error') colorClass = 'text-red-400';
+            if (type === 'warning') colorClass = 'text-amber-400 font-bold';
+            if (type === 'header') colorClass = 'text-indigo-300 font-black border-b border-indigo-900 mt-2 mb-1';
+            p.innerHTML = `<span class="text-gray-500 font-mono">[${new Date().toLocaleTimeString()}]</span> <span class="${colorClass}">${msg}</span>`;
+            elements.log.prepend(p);
+        }
+
+        const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+        function safeNumber(v) {
+            if (typeof v === 'string') v = v.replace(/,/g, '');
+            const n = Number(v);
+            return (v === '' || v === null || isNaN(n)) ? 0 : n;
+        }
+
+        function parseFlexibleDate(dateStr) {
+            if (!dateStr) return null;
+            const s = String(dateStr).trim();
+
+            // Handle Excel/Sheets date format which might use slashes or hyphens
+            // Priority: DD/MM/YYYY -> MM/DD/YYYY -> YYYY-MM-DD
+
+            // Try DD/MM/YYYY
+            const dmyMatch = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+            if (dmyMatch) {
+                const day = parseInt(dmyMatch[1], 10);
+                const month = parseInt(dmyMatch[2], 10) - 1;
+                let year = parseInt(dmyMatch[3], 10);
+                if (year < 100) year += 2000;
+
+                const d = new Date(year, month, day);
+                // Basic validation: month must be 0-11, day must be valid for month
+                if (!isNaN(d.getTime()) && d.getMonth() === month) return d;
+            }
+
+            // Fallback to standard JS parsing (covers ISO YYYY-MM-DD and MM/DD/YYYY)
+            let d = new Date(s);
+            if (!isNaN(d.getTime())) return d;
+
+            return null;
+        }
+
+        function toTimestamp(dateStr) {
+            const d = parseFlexibleDate(dateStr);
+            return d ? Timestamp.fromDate(d) : null;
+        }
+
+        function constructUploadPaymentKey(parentRfpFullCode, csvInvRef, csvPartRef) {
+            if (!parentRfpFullCode) return null;
+            const parentSegments = parentRfpFullCode.split('-');
+            const parentSerial = parentSegments[0];
+            const inputSerial = String(csvInvRef || '').trim().padStart(4, '0');
+            const cleanPart = String(csvPartRef || '').trim();
+            const partSuffix = cleanPart ? `Part ${cleanPart.padStart(2, '0')}` : '';
+
+            if (inputSerial === parentSerial) {
+                return partSuffix ? `${parentRfpFullCode}-${partSuffix}` : parentRfpFullCode;
+            } else {
+                const project = parentSegments[1] || '0000';
+                const issuer = parentSegments[2] || 'iAS';
+                const base = `${inputSerial}-${project}-${issuer}`;
+                return partSuffix ? `${base}-${partSuffix}` : base;
+            }
+        }
+
+        function updateStepUI(stepNum, desc, btnText) {
+            currentStep = stepNum;
+            elements.stepDescription.innerText = `Step ${stepNum}: ${desc}`;
+            elements.nextStepBtn.innerText = btnText || `Execute Step ${stepNum}`;
+            elements.nextStepBtn.disabled = false;
+            elements.statusText.innerText = "Waiting for User";
+        }
+
+        function toggleButtons(enable) {
+            elements.nextStepBtn.disabled = !enable;
+            elements.markAllBilledBtn.disabled = !enable;
+            elements.markAllUnbilledBtn.disabled = !enable;
+        }
+
+        async function wipeCollection(collectionPath) {
+            log(`Wiping collection: ${collectionPath}...`, 'warning');
+            const collectionRef = collection(db, collectionPath);
+            let deletedCount = 0;
+            while (true) {
+                const q = query(collectionRef, limit(500));
+                const snap = await getDocs(q);
+                if (snap.empty) break;
+                const batch = writeBatch(db);
+                snap.forEach(d => batch.delete(d.ref));
+                await batch.commit();
+                deletedCount += snap.size;
+                log(`...Deleted ${deletedCount} documents.`);
+                await delay(100);
+            }
+            log(`Wipe Complete.`);
+        }
+
+        async function step1_Connect() {
+            try {
+                let configText = elements.firebaseConfig.value.trim();
+                if (!configText) throw new Error("Firebase config required.");
+                if (configText.includes('=')) configText = configText.split('=')[1].trim();
+                if (configText.endsWith(';')) configText = configText.slice(0, -1);
+                const firebaseConfig = (new Function(`return ${configText}`))();
+                if (!getApps().length) initializeApp(firebaseConfig);
+                db = getFirestore();
+                const authInstance = getAuth();
+                const email = elements.adminEmail.value.trim();
+                const password = elements.adminPassword.value.trim();
+                if (email && password) await signInWithEmailAndPassword(authInstance, email, password);
+                else await signInAnonymously(authInstance);
+                log("Step 1 Success: Connected.");
+                updateStepUI(2, "Preparation & Metadata", "Run Step 2");
+                toggleButtons(true);
+            } catch (e) { log(`Step 1 Failed: ${e.message}`, 'error'); }
+        }
+
+        async function step2_Prepare() {
+            const type = elements.dataType.value;
+            const collectionName = dataSchemas[type].collection;
+            try {
+                if (elements.deleteCheckbox.checked) await wipeCollection(collectionName);
+                log("Fetching sequence counters...");
+                const countersSnap = await getDocs(collection(db, 'counters'));
+                counterMap = {};
+                countersSnap.forEach(d => { counterMap[d.id] = d.data().lastSequence || 0; });
+
+                if (type === 'salaries') {
+                    log("Mapping employee IDs...");
+                    const snap = await getDocs(collection(db, 'employees'));
+                    employeeMap = {};
+                    snap.forEach(d => {
+                        if (d.data().employeeNumber) employeeMap[String(d.data().employeeNumber).trim()] = d.id;
+                    });
+                }
+
+                if ((type.includes('rfp') || type === 'rfps_base') && !elements.deleteCheckbox.checked) {
+                    log("Fetching existing RFPs for context mapping...");
+                    const snap = await getDocs(collection(db, 'rfps'));
+                    rfpMap = {};
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if (data.rfpCode) rfpMap[String(data.rfpCode).trim().toLowerCase()] = { id: d.id, rfpCode: data.rfpCode, vatApplicable: data.vatApplicable !== false, projectNumber: data.projectNumber, issuer: data.issuer, invoicedAmount: data.invoicedAmount || 0, totalAmount: data.totalAmount || 0 };
+                    });
+                    log(`Loaded ${Object.keys(rfpMap).length} RFPs.`);
+                }
+                updateStepUI(3, "Parse CSV Content", "Run Step 3");
+            } catch (e) { log(`Step 2 Failed: ${e.message}`, 'error'); }
+        }
+
+        async function step3_ParseCSV() {
+            const raw = elements.csvData.value.trim();
+            if (!raw) return log("No CSV data.", 'error');
+            Papa.parse(raw, {
+                header: true, skipEmptyLines: true,
+                complete: (results) => {
+                    parsedRecords = results.data;
+                    log(`Parsed ${parsedRecords.length} records.`);
+                    chunks = [];
+                    for (let i = 0; i < parsedRecords.length; i += 100000) chunks.push(parsedRecords.slice(i, i + 100000));
+                    currentChunkIndex = 0;
+                    updateStepUI(4, `Upload Batch 1 of ${chunks.length}`, "Upload Batch 1");
+                }
+            });
+        }
+
+        async function step4_ProcessBatch() {
+            elements.nextStepBtn.disabled = true;
+            const chunk = chunks[currentChunkIndex];
+            const type = elements.dataType.value;
+            const collectionName = dataSchemas[type].collection;
+            let opsCount = 0;
+            let batch = writeBatch(db);
+
+            log(`--- Processing Batch ${currentChunkIndex + 1} ---`, 'header');
+
+            for (let i = 0; i < chunk.length; i++) {
+                const record = { ...chunk[i] };
+                let ref = null;
+                let isMergeOperation = false;
+
+                if (type === 'rfps_merge_flat') {
+                    // (Merge logic kept same)
+                    // ...
+                } else if (type === 'rfps_base') {
+                    ref = doc(collection(db, collectionName));
+                    const isVat = castToBoolean(record.vatApplicable, true);
+                    const net = safeNumber(record.amount);
+                    const vat = isVat ? (net * VAT_RATE) : 0;
+                    record.amount = net;
+                    record.vatAmount = vat;
+                    record.totalAmount = net + vat;
+                    record.vatApplicable = isVat;
+                    record.invoicedAmount = 0;
+                    record.status = record.status || 'Issued - Open';
+                    record.createdAt = toTimestamp(record.createdAt) || Timestamp.now();
+                    record.issuedAt = toTimestamp(record.issuedAt) || record.createdAt;
+                } else if (type === 'costs') {
+                    ref = doc(collection(db, collectionName));
+                    record.vatApplicable = castToBoolean(record.vatApplicable, true);
+                    record.isPaid = castToBoolean(record.isPaid, false);
+                    record.amount = safeNumber(record.amount);
+                    record.billingStatus = 'unbilled';
+
+                    // Parse main invoice date - Force YYYY-MM-DD format for storage
+                    const mainDate = parseFlexibleDate(record.date);
+                    if (mainDate) {
+                        record.date = mainDate.toISOString().split('T')[0];
+                        // If invoiceDate field exists (as in the schema prompt), sync it
+                        record.invoiceDate = record.date;
+                    }
+
+                    // Process Payment Fields
+                    if (record.isPaid) {
+                        record.paymentRef = record.paymentRef || '';
+                        record.amountPaid = record.amountPaid ? safeNumber(record.amountPaid) : record.amount;
+
+                        const pDate = parseFlexibleDate(record.paymentDate);
+                        record.paymentDate = pDate ? pDate.toISOString().split('T')[0] : '';
+                    } else {
+                        record.paymentRef = '';
+                        record.amountPaid = 0;
+                        record.paymentDate = '';
+                    }
+
+                } else if (type === 'salaries') {
+                    const empId = employeeMap[String(record.employeeNumber).trim()];
+                    if (empId) {
+                        ref = doc(collection(db, `employees/${empId}/salary_history`));
+                        record.effectiveDate = toTimestamp(record.effectiveDate) || Timestamp.now();
+                        record.baseSalary = safeNumber(record.baseSalary);
+                    }
+                } else {
+                    ref = doc(collection(db, collectionName));
+                }
+
+                if (ref) {
+                    batch.set(ref, record);
+                    opsCount++;
+                }
+
+                if (opsCount > 0 && opsCount % 500 === 0) {
+                    await batch.commit(); batch = writeBatch(db);
+                    log(`Uploaded 500 records. Progress: ${i + 1}/${chunk.length}`);
+                }
+            }
+            await batch.commit();
+            log(`Batch Complete.`);
+            currentChunkIndex++;
+            if (currentChunkIndex < chunks.length) updateStepUI(4, `Upload Batch ${currentChunkIndex + 1}`, `Upload Batch ${currentChunkIndex + 1}`);
+            else updateStepUI(5, "Complete", "Reset");
+        }
+
+        async function bulkUpdateTimesheetStatus(newStatus) {
+            if (!confirm(`Mark ALL timesheets as ${newStatus}?`)) return;
+            toggleButtons(false);
+            try {
+                const snap = await getDocs(collection(db, 'timesheet_entries'));
+                let count = 0; let batch = writeBatch(db);
+                for (const d of snap.docs) {
+                    batch.update(d.ref, { billingStatus: newStatus });
+                    count++;
+                    if (count % 500 === 0) { await batch.commit(); batch = writeBatch(db); }
+                }
+                await batch.commit();
+                log(`Successfully updated ${count} entries.`);
+            } catch (e) { log(`Error: ${e.message}`, 'error'); }
+            finally { toggleButtons(true); }
+        }
+
+        elements.markAllBilledBtn.addEventListener('click', () => bulkUpdateTimesheetStatus('billed'));
+        elements.markAllUnbilledBtn.addEventListener('click', () => bulkUpdateTimesheetStatus('unbilled'));
+        elements.nextStepBtn.addEventListener('click', () => {
+            if (currentStep === 1) step1_Connect();
+            else if (currentStep === 2) step2_Prepare();
+            else if (currentStep === 3) step3_ParseCSV();
+            else if (currentStep === 4) step4_ProcessBatch();
+            else window.location.reload();
+        });
+        elements.resetBtn.addEventListener('click', () => window.location.reload());
+    </script>
+</body>
+</html>

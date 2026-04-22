@@ -1,0 +1,78 @@
+name,surname,companyEmail,idNumber,middleName,mobileNumber,address,niNumber,personalEmail,employeeNumber,createdAt,isEmployed
+Stephen,Grech,,,,,,,,0001,,false
+Lee,Connell,,,,,,,,0002,,false
+Peter,Zammit,peter.zammit@ias.com.mt,,,,,,,0003,,true
+James,Mifsud,,,,,,,,0004,,false
+Frederick,Grech,frederick.grech@ias.com.mt,,,,,,,0005,,true
+Lawrence,Chetcuti,lawrence.chetcuti@ias.com.mt,,,,,,,0006,,true
+Gareth,Dimech,,,,,,,,0007,,false
+David,Micallef,david.micallef@ias.com.mt,,,,,,,0008,,true
+David,Muscat,,,,,,,,0009,,false
+Adrian,Mifsud,,,,,,,,0010,,false
+Louiselle,Pace,,,,,,,,0011,,true
+Janis,Mangiafico,,,,,,,,0012,,false
+Jacqueline,Giordmaina,,,,,,,,0013,,false
+Mark,Borg,mark.borg@ias.com.mt,,,,,,,0014,,true
+Patrick,Muscat,patrick.muscat@ias.com.mt,,,,,,,0015,,true
+Cliff,Cilia,,,,,,,,0016,,false
+Joseph,Tabone,,,,,,,,0017,,false
+Jan,Patchett,,,,,,,,0018,,false
+Isabelle,Magri Sciberras,,,,,,,,0019,,false
+Annalise,Tanti,,,,,,,,0020,,false
+James,Schembri,james.schembri@ias.com.mt,,,,,,,0021,,true
+Franco,Azzopardi,,,,,,,,0022,,false
+Michael,Cutajar,michael.cutajar@ias.com.mt,,,,,,,0023,,true
+Justin,Schembri,,,,,,,,0024,,false
+Paolo,Rossitto,paolo.rossitto@ias.com.mt,,,,,,,0025,,true
+XX,XXX,,,,,,,,0026,,false
+Martina,Francica,,,,,,,,0027,,false
+Matthew,Casha,,,,,,,,0028,,false
+Leander,Grech,,,,,,,,0029,,false
+Anne,Aquilina,,,,,,,,0030,,false
+Adrian,Davison,,,,,,,,0031,,false
+Srdan,Veselinovic,,,,,,,,0032,,false
+Fabrizio,Baldacchino,,,,,,,,0033,,false
+Emann,Aquilina,emann.aquilina@ias.com.mt,,,,,,,0034,,true
+Mario,Cordina,,,,,,,,0035,,false
+Emanuel,Vella,,,,,,,,0036,,false
+Michelle,Camilleri,,,,,,,,0037,,false
+Joseph,Galea,,,,,,,,0038,,false
+Tom,Offerman,,,,,,,,0039,,false
+Alice,Berselli,,,,,,,,0040,,false
+Jurgen,Gatt,,,,,,,,0041,,false
+Elaine,Zammit,elaine.zammit@ias.com.mt,,,,,,,0042,,true
+Isaac,Zammit,isaac.zammit@ias.com.mt,,,,,,,0043,,true
+Edward,Zammit,,,,,,,,0044,,false
+Ben,Farrugia,,,,,,,,0045,,false
+Sabrina,Bertona,,,,,,,,0046,,false
+Matthew,Gatt,,,,,,,,0047,,false
+Saviour,Mifsud,,,,,,,,0048,,false
+Gabrielle,Farrugia,,,,,,,,0049,,false
+Zachary,Rizzo,zachary.rizzo@ias.com.mt,,,,,,,0050,,true
+Chesney,Grima,chesney.grima@ias.com.mt,,,,,,,0051,,true
+Chris,Debono,chris.debono@ias.com.mt,,,,,,,0052,,true
+Monica,Gutierrez,,,,,,,,0053,,false
+Carl,Benecke,carl.benecke@ias.com.mt,,,,,,,0054,,true
+Carlos,Fermin,,,,,,,,0055,,false
+Anne,Aardenburg,,,,,,,,0056,,false
+Peter,Baldacchino,,,,,,,,0057,,false
+David,Mifsud,david.mifsud@ias.com.mt,275497M,,79006620,11  Betlem  Dun Salvatore Zarb Street  Gharghur  Gharghur  Malta,C51434343,,0058,2021-08-23,true
+Richard,Zahra,richard.zahra@ias.com.mt,343468M,,79431968,42    Fra Giuseppe Zammit Street  Pembroke  Pembroke  Malta,B27819092,,0059,2019-10-14,true
+Emmanuel,Bonello,,19593M,,99564561,49  Illusion  Imqabba Road  Siggiewi  Siggiewi  Malta,C49880723,,0060,2019-11-04,false
+Zz,Overheads,,,,,,,,0076,,false
+Zz,Working hours,,,,,,,,0077,,false
+Laura,Piccinino,,398600L,,99596608,135  -  St Ursola Street  Valletta  Valletta  Malta,398600L,,0061,2020-07-23,false
+Nathan,Zammit,,405301 L,,-,85  Tamarand  Triq Guzeppi Caruana  Tal-Virtu  Rabat  Rabat  Malta,405301L,,0062,2020-07-23,true
+Elena,Pace,,54796M,,99439446,18  Calathea  Karmenu Vassallo Street  Iklin  Iklin  Malta,54796M,,0063,2020-11-16,false
+Ruth,Galea,,376194M,,99251534,53  Creola  Triq Ghar Mirdum  Dingli  Dingli  Malta,A47226170,,0064,2021-04-05,false
+John,Mongao,john.mongao@ias.com.mt,D108256A,,99773076,40/4  Beaumont Place  Main Street  Balzan  Balzan  Malta,D108256A,,0065,2021-04-08,true
+Luke,Zammit,luke.zammit@ias.com.mt,096705L,,77771133,85  Tamarind  Triq Giuseppe Caruana  Tal-Virtu  Rabat  Rabat  Malta,096705L,,0066,2021-07-22,true
+Kurt,Borg,,58602L,,79919591,15  -  Alley 6  Victory Square   Naxxar  Naxxar  Malta,58602L,,0067,2021-07-26,false
+Kurt,Ciantar,,178099M,,79918847,48  Marija Assunta  Triq il-Fulija  Qrendi  Qrendi  Malta,,,0068,2022-07-12,false
+Riccardo,Gatt,riccardo.gatt@ias.com.mt,200H,,79562634,27  San Giorgio  Sir Arturo Mercieca Street  Victoria  Victoria  Malta,,,0069,2023-08-02,true
+David,Ellul,david.ellul@ias.com.mt,362793M,,79232187,2 Flat 3  -  Vilhena Street  Floriana  Floriana  Malta,D45070034,,0070,2023-08-01,true
+Jurian,Refalo,jurian.refalo@ias.com.mt,536893M,,99592904,Blk 1 Flat 1  Fairwinds  Block 1  Flat 1  Triq Indri Micallef  Luqa  Luqa  Malta,536893M,,0071,2023-11-06,true
+Rovena,Lavane,rovena.lavane@ias.com.mt,BJ4609656,,77128817,113B  -  St Nicholas Street  Valletta  Valletta  Malta,,,0072,,true
+Bradley,Refalo,bradley.refalo@ias.com.mt,252379M,,79706301,4  Fiord Land  Triq Vincenzo Bugeja  Sta Venera  Sta Venera  Malta,D34252484,,0073,2024-07-02,true
+Lindsey,Grech,,430484M,,79468585,53  -  Triq San Anard  Tarxien  Tarxien  Malta,D37513296,,0074,2024-07-02,true
+Shaniah,Bonello,,262302L,,79490744,112  Daisy  Triq Francesco Buhagiar  Birkirkara  Birkirkara  Malta,,,0075,2024-07-18,false

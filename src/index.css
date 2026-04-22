@@ -1,0 +1,31 @@
+/* File Path: src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Fix for browser autofill styles overriding Tailwind classes */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: #111827 !important; /* text-gray-900 */
+    font-size: 1.125rem !important; /* text-lg */
+    -webkit-box-shadow: 0 0 0 30px white inset !important; /* Removes autofill background color */
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.half-day-green {
+    background: linear-gradient(to bottom, #4ade80 50%, #f0fdf4 50%);
+    color: #166534;
+}
+
+.half-day-yellow {
+    background: linear-gradient(to bottom, #facc15 50%, #fefce8 50%);
+    color: #854d0e;
+}
+
+.half-day-pink {
+    background: linear-gradient(to bottom, #ec4899 50%, #fce7f3 50%);
+    color: #831843;
+}

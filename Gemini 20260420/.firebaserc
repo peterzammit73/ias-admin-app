@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "ias-web-01-01-dev",
+    "dev": "ias-web-01-01-dev",
+    "prod": "ias-web-01-01"
+  },
+  "targets": {},
+  "etags": {}
+}

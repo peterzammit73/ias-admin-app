@@ -1,0 +1,529 @@
+projectNumber,type,description,supplier,amount,date,vatApplicable,invoiceRef,paymentRef,isPaid,amountPaid,paymentDate
+358,,,ELLULAL,520,7/3/2010,TRUE,V/440,1054,true,520,9/15/2010
+358,,,ELLULAL,3030.96,7/3/2010,TRUE,V/441,1014,true,3030.96,7/16/2010
+358,,,SHIELDSE,500,7/19/2010,TRUE,V/436,1053,true,500,9/15/2010
+358,,,FLOCKIM,2548,6/17/2010,TRUE,V/437,1051,true,2548,9/17/2010
+358,,,BNELSER,2000,6/10/2010,TRUE,V/438,1050,true,2000,9/17/2010
+358,,,BNELSER,1000,8/3/2010,TRUE,V/445,1050,true,1000,9/17/2010
+358,,,MEDITER,3552.96,8/4/2010,TRUE,V/457,1041,true,3552.96,9/7/2010
+358,,,EMI,7776,9/7/2010,TRUE,V/462,1042,true,7776,9/7/2010
+358,,,JSD,3448,10/11/2010,TRUE,V/484,1075,true,3448,11/15/2010
+358,,,JSD,16270.8,10/11/2010,TRUE,V/485,1075,true,16270.8,11/15/2010
+358,,,JSD,480,10/11/2010,TRUE,V/486,1075,true,480,11/15/2010
+358,,,BNELSER,1500,10/18/2010,TRUE,V/488,1074,true,1500,11/15/2010
+358,,,BNELSER,900,10/18/2010,TRUE,V/489,1074,true,900,11/15/2010
+358,,,ELECTROM,7776,10/1/2010,TRUE,V/603,POA,true,12000,10/2/2010
+358,,,ELECTROM,1661,10/1/2010,TRUE,V/604,1069,true,16571.16,11/12/2010
+358,,,ELECTROM,7002.72,10/1/2010,TRUE,V/605,SET/OFF,true,10661.56,12/31/2010
+358,,,ELECTROM,12000,10/1/2010,TRUE,V/606,SET/OFF,true,,
+358,,,ELECTROM,10793,10/4/2010,TRUE,V/607,SET/OFF,true,,
+358,,,POLIDANO,5140.64,10/6/2010,TRUE,V/610,SET/OFF,true,5140.64,3/31/2011
+358,,,TITAN,22532.21,10/4/2010,TRUE,V/682,1161,true,4237.29,3/30/2011
+358,,,,,,TRUE,,1173,true,7028.81,3/30/2011
+358,,,,,,TRUE,,1195,true,11266.1,4/28/2011
+335,,,SPHERE,3000,10/1/2010,TRUE,V/499,1106,true,3000,1/7/2011
+335,,,SPHERE,3000,11/27/2010,TRUE,V/500,1106,true,3000,1/7/2011
+335,,,SPHERE,3000,10/28/2010,TRUE,V/501,1106,true,3000,1/7/2011
+335,,,SPHERE,3000,1/30/2011,TRUE,V/566,1155,true,3000,3/3/2011
+335,,,SPHERE,3000,3/1/2011,TRUE,V/652,1220,true,3000,5/31/2011
+335,,,SPHERE,3000,2/1/2011,TRUE,V/655,1196,true,3000,4/28/2011
+335,,,SPHERE,3000,4/1/2011,TRUE,V704,1220,true,3000,5/31/2011
+335,,,SPHERE,3000,5/2/2011,TRUE,V/729,1249,true,3000,7/28/2011
+335,,,SPHERE,9297.21,5/24/2011,TRUE,V/760,1233,true,9297.21,6/30/2011
+335,,,SPHERE,3000,6/1/2011,TRUE,V/771,1259,true,3000,8/30/2011
+335,,,SPHERE,3000,7/1/2011,TRUE,V/819,1288,true,3000,10/4/2011
+335,,,SPHERE,3000,7/29/2011,TRUE,V/839,1300,true,3000,11/2/2011
+335,,,SPHERE,3000,9/30/2011,TRUE,V/879,1321,true,3000,12/1/2011
+335,,,SPHERE,3000,9/3/2011,TRUE,V/878,1346,true,3000,1/23/2012
+335,,,SPHERE,14509.14,9/28/2011,TRUE,V/881,1346,true,14509.14,1/23/2012
+335,,,SPHERE,3000,10/28/2011,TRUE,V/925,1367,true,3000,2/29/2012
+335,,,SPHERE,3000,11/30/2011,TRUE,V/965,1367,true,3000,2/29/2012
+339,,,Adrian Mifsud,8000,1/3/2011,TRUE,V/602,1101,true,8000,1/4/2011
+339,,,Adrian Mifsud,8000,5/2/2011,TRUE,V/838,1677,true,8000,7/19/2013
+400,,,Sphere,1833.75,10/1/2010,TRUE,V/497,1107,true,1833.75,1/7/2011
+400,,,Sphere,900,10/27/2010,TRUE,V/498,1107,true,900,1/7/2011
+400,,,Sphere,742.5,2/7/2011,TRUE,V/609,1171,true,742.5,3/3/2011
+400,,,VISA,709.96,4/30/2011,TRUE,Apr_VISA,VISA,true,7096.96,5/11/2011
+400,,,Sphere,4830,5/17/2011,TRUE,V749,1249,true,4830,7/28/2011
+400,,,Fenech & Fenech,150,7/21/2011,TRUE,V/827,1283,true,150,10/4/2011
+400,,,Sphere,2970,7/1/2011,TRUE,V/831,1367,true,2970,2/29/2012
+400,,,Sphere,1080,7/29/2011,TRUE,V/840,1367,true,2970,2/29/2012
+40,,,Gozo Channel,131.02,12/31/2006,TRUE,CP_Variuos,CP,true,131.02,12/31/2006
+40,,,Gozo Channel,621.9,12/31/2007,TRUE,CP_Variuos,CP,true,621.9,12/31/2007
+40,,,Gozo Channel,987.38,12/31/2007,TRUE,CP_Variuos,CP,true,987.38,12/31/2008
+40,,,Gozo Channel,221.55,7/8/2009,TRUE,CP_Variuos,CP,true,221.55,7/8/2009
+40,,,Nicholas Bellizzi,4786.66,2/12/2007,TRUE,V/217,358,true,4786.66,5/10/2007
+40,,,Nicholas Bellizzi,4786.66,4/12/2006,TRUE,V/47,112,true,4786.66,5/10/2006
+40,,,Gozo Channel,9.32,12/31/2005,TRUE,CP_Variuos,CP,true,9.32,12/31/2005
+40,,,David Abela,1747.03,6/3/2007,TRUE,V/247,424,true,1747.03,8/1/2007
+40,,,Jean Marc Bianchi,3494.06,7/31/2007,TRUE,V/254,433,true,3494.06,8/17/2007
+40,,,Nicholas Bellizzi,3074.77,5/19/2006,TRUE,V/71,129,true,3074.77,6/1/2006
+40,,,Nicholas Bellizzi,2393.43,7/17/2008,TRUE,V/396,722,true,2393.43,10/6/2008
+40,,,Nicholas Bellizzi,2393.43,1/7/2009,TRUE,V/56 ,773,true,2393.43,3/10/2009
+40,,,Jean Marc Bianchi,1180,5/6/2009,TRUE,V/113,836,true,1180,9/30/2009
+40,,,Jean Marc Bianchi,1533.9,10/6/2009,TRUE,V/159,957,true,1533.9,10/30/2009
+40,,,David Abela,1747.03,6/9/2006,TRUE,V/134,165,true,1747.03,7/19/2006
+40,,,David Abela,1747.03,6/11/2009,TRUE,V/90,805,true,1747.03,6/11/2009
+145,,,Terracore,1518.05,11/12/2006,TRUE,V/164,253,true,1518.05,11/28/2006
+335,,,SPHERE,14428.1,3/14/2012,TRUE,V/1071,1437,true,14428.1,7/27/2012
+335,,,SPHERE,3000,4/3/2012,TRUE,V/1075,1456,true,3000,8/30/2012
+335,,,SPHERE,3000,1/2/2012,TRUE,V/995,1379,true,3000,3/28/2012
+335,,,SPHERE,3000,2/1/2012,TRUE,V/1015,1390,true,3000,4/27/2012
+130,,,SITRACKC,4400,12/9/2010,TRUE,V/611,1094,true,4400,12/11/2010
+130,,,SITRACKC,4400,2/9/2011,TRUE,V/618,1219,true,4400,5/31/2011
+130,,,SITRACKC,3300,1/3/2011,TRUE,V/619,1156,true,3300,3/4/2011
+130,,,SITRACKC,4400,11/10/2010,TRUE,V/645,1142,true,4400,2/25/2011
+130,,,SITRACKC,4400,11/10/2010,TRUE,V/656,1142,true,4400,2/25/2011
+130,,,SITRACKC,4400,3/8/2011,TRUE,V/675,1219,true,4400,5/31/2011
+339,,,Solidbase,350,2/18/2011,TRUE,V/672,,true,,
+389,,,RAYCUT,1310,12/20/2011,TRUE,V/1074,1381,true,1310,4/2/2012
+391,,,Terracore,1835,6/14/2011,TRUE,V/821,1291,true,1835,10/19/2011
+334,,MIA Park 4,Solidbase,8130,3/15/2010,TRUE,V/362,SET/OFF,true,8130,1/31/2011
+335,,,SPHERE,14428.1,3/14/2012,TRUE,V/1071,1437,true,14428.1,7/27/2012
+335,,,SPHERE,3000,3/1/2012,TRUE,V/1090,1406,true,3000,5/31/2012
+335,,,SPHERE,3000,4/1/2012,TRUE,V/1075,1456,true,3000,8/30/2012
+335,,,SPHERE,3000,5/2/2012,TRUE,V/1107,1473,true,3000,9/27/2012
+335,,,SPHERE,3000,6/4/2012,TRUE,V/1125,1494,true,3000,10/29/2012
+335,,,SPHERE,3000,7/2/2012,TRUE,V/1230,1514,true,3000,11/28/2012
+335,,,SPHERE,3000,8/1/2012,TRUE,V/1231,1531,true,3000,12/27/2012
+335,,,SPHERE,3000,9/3/2012,TRUE,V/1232,1553,true,3000,1/29/2013
+335,,,SPHERE,3000,10/1/2012,TRUE,V/1259,1648,true,3000,6/26/2013
+335,,,SPHERE,1071.19,5/6/2013,TRUE,V/1481,1855,true,1071.19,3/27/2014
+437,,,Michael Cutajar,76.27,10/30/2012,TRUE,V/1317,1515,true,76.27,11/28/2012
+437,,,Michael Cutajar,27.12,12/30/2012,TRUE,V/1344,1535,true,27.12,12/21/2012
+437,,,Michael Cutajar,23.73,1/31/2013,TRUE,V/1377,1558,true,23.73,1/31/2013
+437,,,Michael Cutajar,35.17,2/28/2013,TRUE,V/1415,1586,true,35.17,3/1/2013
+437,,,Michael Cutajar,33.05,3/28/2013,TRUE,V/1445,1601,true,33.05,3/28/2013
+437,,,Michael Cutajar,26.27,4/30/2013,TRUE,V/1476,1623,true,26.27,4/30/2013
+437,,,Michael Cutajar,8.05,5/30/2013,TRUE,V/1514,1646,true,8.05,5/31/2013
+437,,,Michael Cutajar,76.27,6/30/2013,TRUE,V/1546,1664,true,76.27,7/2/2013
+437,,,Michael Cutajar,2.19,7/31/2013,TRUE,V/1570,1680,true,2.19,7/31/2013
+437,,,Frederick Grech,16.53,2/27/2013,TRUE,V/1408,1579,true,16.53,2/27/2013
+437,,,Frederick Grech,7.2,3/28/2013,TRUE,V/1443,1600,true,7.2,3/28/2013
+437,,,Frederick Grech,13.97,5/21/2013,TRUE,V/1502,1628,true,13.97,5/21/2013
+437,,Not paid yet,Peter Zammit,30.93,12/31/2012,TRUE,,,true,,
+441,,,Frederick Grech,6.78,7/31/2013,TRUE,V/1575,1684,true,6.78,7/31/2013
+460,,Tkts Gozo July ,Gareth Dimech,60.13,7/31/2013,TRUE,V/1577,1687,true,60.13,8/8/2013
+460,,"Tkts Gozo June, Aug + Sept - not paid yet",Stephen Grech,51.74,6/30/2013,TRUE,,,true,,
+460,,Stationery,Gareth Dimech,32.83,7/31/2013,TRUE,PC_July,,true,32.83,7/31/2013
+130,,,Melita plc,1128.72,8/31/2012,TRUE,,DD,true,1128.72,9/4/2012
+130,,,Melita plc,918.18,12/31/2012,TRUE,,DD,true,918.18,1/4/2013
+130,,Mob Jan - June 13,Melita plc,1048.93,6/30/2013,TRUE,,DD,true,1048.93,7/3/2013
+448,,,VISA,1348.65,5/31/2013,TRUE,Visa_May,VISA,true,1348.65,5/31/2013
+466,,Intercontinental RFP 1277,VISA,550.67,6/26/2013,TRUE,Visa_June,VISA,true,550.67,6/26/2013
+466,,Lufthansa Koeln RFP 1277,VISA,1612.19,6/25/2013,TRUE,Visa_June,VISA,true,1612.19,6/25/2013
+466,,Air Malta RFP 1277,VISA,731.42,6/20/2013,TRUE,Visa_June,VISA,true,731.42,6/20/2013
+466,,Qatar Airways RF91277,VISA,2120.71,6/20/2013,TRUE,Visa_June,VISA,true,2120.71,6/20/2013
+466,,Amount lost in refund RFP 1277,VISA,61.86,6/20/2013,TRUE,Visa_June,VISA,true,61.86,6/20/2013
+466,,Site Plans ,PC_July,38.98,7/17/2013,TRUE,PC_July,Petty Cash,true,38.98,7/17/2013
+466,,Requested Weather data,TRANSFER,950,6/11/2013,TRUE,TRF11/06,TRF11/06,true,950,6/11/2013
+467,,,RCS,550.76,6/18/2013,TRUE,V/1536,Chq_1710,true,550.76,9/16/2013
+467,,,Visa_Mepa,63.56,7/23/2013,TRUE,Visa_Mepa,Visa _Mepa ,true,63.56,7/23/2013
+256,,,Norbert Gatt,350,5/5/2012,TRUE,V/1281,1495,true,350,10/30/2013
+417,,,Deprt of Contracts,42.37,7/20/2012,TRUE,V/1190,TRF20/07,true,42.37,7/20/2012
+332,,,Daniel Azzopardi,280,6/28/2012,TRUE,V/1161,1462,true,280,8/30/2012
+389,,,RAYCUT,1310,8/24/2011,TRUE,V/1074,1381,true,1310,4/2/2012
+466,,Scans,Pc_August,5.08,8/9/2013,TRUE,PC_August ,Petty Cash,true,5.08,8/9/2013
+466,,Scans,Pc_August,5.08,8/26/2013,TRUE,PC_August ,Petty Cash,true,5.08,8/26/2013
+460,,Rooter + Mouse ,Pc_August,20.98,8/28/2013,TRUE,PC_August ,Petty Cash,true,20.98,8/28/2013
+460,,Tkts Gozo Aug,Gareth Dimech,79.83,8/30/2013,TRUE,V/1606,1702,true,79.83,8/30/2013
+478,,DNO ,MEPA ,101.69,9/14/2013,TRUE,Chq_1707,1707,true,101.69,9/14/2013
+460,,Tkts Gozo Sept,Gareth Dimech,53.22,9/30/2013,TRUE,V/1637,Chq_1722,true,53.22,10/1/2013
+466,,Scans,PC_Oct,4.23,10/8/2013,TRUE,PC_Oct,Petty Cash,true,4.23,10/8/2013
+466,,Digital Maps,Mepa ,29.07,10/8/2013,TRUE,Chq_1733,Cheque ,true,29.07,10/8/2013
+441,,Fred Parking Ticket,PC_Oct,2.54,10/18/2013,TRUE,PC_Oct,Petty Cash,true,2.54,10/18/2013
+466,,James files for Project 0466,James ,11.78,11/18/2013,TRUE,PC_Nov,Petty Cash,true,11.78,11/18/2013
+466,,Files for Project 0466,Eduline,58.9,11/19/2013,TRUE,V/1707,Cheque ,true,58.9,11/19/2013
+460,,Tkts Gozo Nov,Gareth Dimech,93.14,11/29/2013,TRUE,V/1718,Chq_1770,true,93.14,11/29/2013
+460,,Tkts Gozo Oct,Gareth Dimech,119.75,11/1/2013,TRUE,V/1681,Chq_1752,true,119.75,11/1/2013
+460,,"Coffe, Milk, Soap for Gozo",Gareth Dimech,10.53,12/2/2013,TRUE,PC_Dec ,Petty Cash,true,10.53,12/2/2013
+415,,Parking Ticket,Frederick Grech,2.54,12/10/2013,TRUE,PC_Dec ,Petty Cash,true,2.54,12/10/2013
+460,,Tkts Gozo Dec,Gareth Dimech,66.53,12/18/2013,TRUE,V/1744,Chq_1785,true,66.53,12/18/2013
+130,,Mob Jul - Dec 13,Melita plc,1242.92,1/6/2014,TRUE,,DD,true,1242.92,1/8/2014
+460,,Puncher + Stapler,Gareth Dimech,5.87,1/6/2014,TRUE,V/1770,Chq_1802,true,5.87,1/28/2014
+466,,Velcro tape ,James ,87.71,1/24/2014,TRUE,V/1779,Chq_1806,true,87.71,1/24/2014
+503,,Prints ,James ,40.68,1/29/2014,TRUE,V/1780,Chq_1807,true,40.68,1/29/2014
+460,,Tkts Gozo Jan,Gareth Dimech,39.92,1/30/2014,TRUE,V/1781,Chq_1808,true,39.92,1/30/2014
+466,,Parking Tkts for meetings ,James ,11.19,1/31/2014,TRUE,V/1785,Chq_1811,true,11.19,1/31/2014
+503,,Prints ,Cliff,16.31,2/13/2014,TRUE,PC_Feb,Petty Cash,true,16.31,2/13/2014
+476,,Flights ,AirMalta,421.28,3/11/2014,TRUE,Visa_March,Visa ,true,421.28,3/11/2014
+466,,Parking Ticket,James ,3.39,4/29/2014,TRUE,V/1890,Chq_1881,true,3.39,4/30/2014
+517,,Parking Ticket,James ,1.4,4/29/2014,TRUE,V/1890,Chq_1881,true,1.4,4/30/2014
+441,,Parking Ticket,Frederick Grech,3.81,4/30/2014,TRUE,V/1894,Chq_1884,true,3.81,4/30/2014
+437,,Parking Ticket,Michael Cutajar,1.69,5/16/2014,TRUE,PC_May,Petty Cash,true,1.69,5/16/2014
+466,,Parking Ticket,James ,3.14,5/8/2014,TRUE,V/1931,Chq_1903,true,3.14,5/30/2014
+517,,Parking Ticket,James ,3.77,5/21/2014,TRUE,V/1931,Chq_1903,true,3.77,5/30/2014
+517,,Parking Ticket,Gareth Dimech,3.77,5/13/2014,TRUE,V/1934,Chq_1906,true,3.77,6/2/2014
+99,,Glass Façade ,JSD,34600.5,6/13/2014,TRUE,V/1946,,true,,
+476,,Flights ,Peter Zammit,502.94,6/22/2014,TRUE,Visa_June ,Visa  ,true,502.94,6/22/2014
+476,,Taxis ,Peter Zammit,324.5,6/22/2014,TRUE,Visa_June,Visa,true,324.5,6/22/2014
+488,,Safety Equipment ,Justin Schembri,126.09,6/25/2014,TRUE,V/1948_1918,Chq_1918,true,126.09,6/25/2014
+466,,Parking Ticket,James ,2.37,6/11/2014,TRUE,V/1975_1948,Chq_1948,true,2.37,7/31/2014
+493,,Parking Ticket,James ,4.83,6/3/2014,TRUE,V/1975_1948,Chq_1948,true,4.83,7/31/2014
+460,,Gozo Tickets,Gareth Dimech,26.61,7/18/2014,TRUE,V/1977_1949,Chq_1949,true,26.61,7/31/2014
+493,,Parking Tickets,Matthew,4.83,7/15/2014,TRUE,V/1980_1952,Chq_1952,true,4.83,7/31/2014
+493,,Parking Tickets ,Matthew,1.02,8/25/2014,TRUE,V/2004_1972,Chq_1972,true,1.02,8/29/2014
+466,,Contract to Marin - Netherlands,DHL,29.99,8/28/2014,TRUE,V/2007_1967,Chq_1967,true,29.99,8/28/2014
+460,,Gozo Tickets,Gareth Dimech,119.75,8/29/2014,TRUE,V/2009_1968,Chq_1968,true,119.75,8/29/2014
+493,,Register of Mail,Malta Post,0.98,9/2/2014,TRUE,PC_Sept ,Petty Cash,true,0.98,9/2/2014
+476,,Sunday times + times of Malta tender advert,Allied newspapers ,483.31,9/2/2014,TRUE,Chq_1977,Chq_1977,true,483.31,9/2/2014
+476,,Torca + Orizzont tender advert,Union print,491.64,9/2/2014,TRUE,Chq_1978,Chq_1978,true,491.64,9/2/2014
+476,,Nazzjon + Il-Mument tender advert,Medialink Comm,518,9/3/2014,TRUE,Chq_1979,Chq_1979,true,518,9/3/2014
+488,,Various equipment for Midi ,Patrick Muscat,188.88,9/15/2014,TRUE,V/2030_1986,Chq_1986,true,188.88,9/15/2014
+460,,Gozo Tickets,Gareth Dimech,226.19,9/30/2014,TRUE,V/2044_2001,Chq_2001,true,226.19,9/30/2014
+488,,Equipment Patrick,Patrick Muscat,8.52,10/10/2014,TRUE,PC_Oct,Petty Cash,true,8.52,10/10/2014
+460,,Gozo tickets + Card ,Gareth Dimech,518.94,10/31/2014,TRUE,V/2069_2028,Chq_2028,true,518.94,10/31/2014
+460,,"Gozo fuel Nov 13, Dec 13, Jan 14, July 14, Aug 14, Sep 14, Oct 14 and Nov  14",Gareth Dimech,1204.86,,TRUE,Various chqs,,true,1204.86,
+130,,Mob Jan - May 14,Melita plc,965.34,6/13/2014,TRUE,,DD,true,965.34,5/30/2014
+415,,Parking tickets ,James ,2.12,1/1/2015,TRUE,PC_Jan 15,PC_Jan 15,true,2.12,1/1/2015
+130,,Mob Jun - Dec 14,Melita plc,766.29,12/31/2014,TRUE,,DD,true,766.29,12/31/2014
+460,,Gareth Gozo Fuel Dec 14,Gareth Dimech,170.25,1/5/2015,TRUE,V/2133_2083,Chq 2083,true,170.25,1/5/2015
+460,,Adrian Gozo Fuel Dec 14,Adrian Davison,36.54,1/7/2015,TRUE,V/2138_2089,Chq 2089,true,36.54,1/7/2015
+460,,Adrian Gozo Tickets Dec 14,Adrian Davison,66.53,1/7/2015,TRUE,V/2139_2089,Chq 2089,true,66.53,1/7/2015
+476,,AirMalta tkts D.Micallef + Peter,AirMalta,758.82,1/14/2015,TRUE,Visa_Jan 15,Visa ,true,758.82,1/14/2015
+460,,Gareth Gozo Fuel Jan 15,Gareth Dimech,289.41,2/2/2015,TRUE,V/2160_2105,Chq 2105,true,289.41,2/2/2015
+460,,Adrian Gozo Fuel Jan 15,Adrian Davison,71.04,2/2/2015,TRUE,V/2162_2107,Chq 2107,true,71.04,2/2/2015
+460,,Adrian Gozo Tikets Jan 15,Adrian Davison,133.05,2/2/2015,TRUE,V/2163_2107,Chq 2107,true,133.05,2/2/2015
+460,,Gareth Gozo Tickets Feb 15,Gareth Dimech,13.31,2/25/2015,TRUE,V/2186A_2126,Chq 2126,true,13.31,2/25/2015
+460,,Gareth Gozo Fuel Feb 15,Gareth Dimech,247.45,2/25/2015,TRUE,V/2186_2126,Chq 2126,true,247.45,2/25/2015
+460,,Adrian Gozo Fuel Feb 15,Adrian Davison,87.02,2/27/2015,TRUE,V/2194_2134,Chq 2134,true,87.02,2/27/2015
+460,,Adrian Gozo Tickets Feb 15,Adrian Davison,133.05,2/27/2015,TRUE,V/2195_2134,Chq 2134,true,133.05,2/27/2015
+460,,Lamination Gozo ,Adrian Davison,6.78,2/27/2015,TRUE,V/2195A_2134,Chq 2134,true,6.78,2/27/2015
+493,,1 Box A4 paper to Mater Dei,Srdjan ,9.96,3/10/2015,TRUE,,,true,9.96,3/10/2015
+460,,Adrian Gozo Fuel March 15,Adrian Davison,95.65,3/27/2015,TRUE,V/2203_2152,Chq 2152,true,95.65,3/27/2015
+460,,Adrian Gozo Tickets March 15,Adrian Davison,146.36,3/27/2015,TRUE,V/2204_2152,Chq 2152,true,146.36,3/27/2015
+460,,Gareth Gozo Fuel March 15,Gareth Dimech,126.92,3/27/2015,TRUE,V/2205_2153,Chq 2153,true,126.92,3/27/2015
+460,,Gareth Gozo Tickets March 15,Gareth Dimech,60.42,3/27/2015,TRUE,V/2206_2153,Chq 2153,true,60.42,3/27/2015
+460,,Adrian 2 tickets + Card Gozo ,Adrian Davison,385.89,4/30/2015,TRUE,V/2236_2178,Chq 2178,true,385.89,4/30/2015
+460,,Adrian Gozo Fuel April 2015,Adrian Davison,112.5,4/30/2015,TRUE,V/2237_2178,Chq 2178,true,112.5,4/30/2015
+493,,1 Box A4 paper to Mater Dei + 3 Punched Pockets Packets ,Srdjan ,46.15,4/28/2015,TRUE,,,true,46.15,4/28/2015
+460,,Gareth Stationery Gozo,Gareth Dimech,44.45,5/4/2015,TRUE,V/2242_2181,Chq 2181,true,44.45,5/4/2015
+460,,Gareth Gozo Fuel April 2015,Gareth Dimech,301.33,5/4/2015,TRUE,V/2243_2181,Chq 2181,true,301.33,5/4/2015
+460,,Gareth Card Gozo,Gareth Dimech,359.28,5/4/2015,TRUE,V/2244_2181,Chq 2181,true,359.28,5/4/2015
+493,,2 Packets Punched Pockets + 1 pack A4 ,Srdjan ,24.96,5/6/2015,TRUE,,,true,24.96,5/6/2015
+460,,Gareth Gozo Fuel May 2015,Gareth Dimech,301.33,5/27/2015,TRUE,V/2259_2196,Chq 2196,true,301.33,5/27/2015
+460,,Adrian Gozo Fuel May 2015,Adrian Davison,112.11,5/28/2015,TRUE,V/2265_2201,Chq 2201,true,112.11,5/28/2015
+493,,6 Arch Levers 3inch + 2 packets folders ,Srdjan ,28.36,6/3/2015,TRUE,,,true,28.36,6/3/2015
+460,,Gozo Flat Rent Mar - June 2015,Miriam Sultana ,1200,5/27/2015,TRUE,V/2272_2207,Chq 2207,true,1200,6/5/2015
+493,,3 Clip boards ,Srdjan ,5.1,6/5/2015,TRUE,,,true,5.1,6/5/2015
+493,,1 A4 Spiral Reg + 1 Packet Plastic folders ,Srdjan ,13.3,6/10/2015,TRUE,,,true,13.3,6/10/2015
+493,,2 Plastic Folders + 1 Box Fasteners ,Srdjan ,24.6,6/18/2015,TRUE,,,true,24.6,6/18/2015
+460,,4 Arch Levers Marble Gozo ,Adrian,3.8,6/26/2015,TRUE,,,true,3.8,6/26/2015
+460,,Adrian Gozo Fuel June 2015,Adrian,129.36,7/2/2015,TRUE,,,true,129.36,7/2/2015
+460,,Gareth Gozo Fuel June 2015,Gareth Dimech,361.59,7/3/2015,TRUE,,,true,361.59,7/3/2015
+493,,Plastic folders + 1 packet A4 Papers ,Srdjan ,13.75,7/7/2015,TRUE,,,true,13.75,7/7/2015
+130,,Mobiles Jan 2015 - June 2015,Melita plc,495.69,7/8/2015,TRUE,,,true,495.69,7/8/2015
+476,,Airmalta tkts Peter,AirMalta,682.56,6/27/2015,TRUE,Visa_June 2015,Visa ,true,682.56,6/27/2015
+476,,AirMalta tkts D.Micallef + Peter + Victor Bonello,Peter Zammit,1450.68,7/24/2015,TRUE,Chq_2237,Chq_2237,true,1450.68,7/24/2015
+466,,James Parking tickets,James ,3.39,7/31/2015,TRUE,Chq_2250,Chq_2250,true,3.39,7/31/2015
+460,,Adrian Gozo Fuel_July 2015,Adrian,172.48,8/3/2015,TRUE,V/2326_2254,Chq_2254,true,172.48,8/3/2015
+460,,Adrian Gozo Tickets Card ,Adrian ,359.28,8/3/2015,TRUE,V/2326A_2254,Chq_2254,true,359.28,8/3/2015
+460,,Gareth Gozo Fuel_July 2015,Gareth Dimech,301.33,8/5/2015,TRUE,V/2329_2257,Chq_2257,true,301.33,8/5/2015
+460,,Gareth Gozo Tickets Card + 3 tkts ,Gareth Dimech,385.59,8/5/2015,TRUE,V/2329A_2257,Chq_2257,true,385.59,8/5/2015
+460,,Gareth Gozo Stationery ,Gareth Dimech,38.97,8/21/2015,TRUE,V/2340_2266,Chq_2266,true,38.97,8/21/2015
+493,,1 Packet Plastic folders ,Srdjan ,11.3,8/26/2015,TRUE,,,true,11.3,8/26/2015
+460,,Adrian Gozo Fuel_August 2015,Adrian,155.23,8/28/2015,TRUE,V/2346_2271,Chq_2271,true,155.23,8/28/2015
+460,,Adrian Gozo Ticket_August 2015,Adrian,13.31,8/28/2015,TRUE,V/2346A_2271,Chq_2271,true,13.31,8/28/2015
+520,,Mark Smart Fuel_May 2014 - Aug 2015,Mark,88.51,8/28/2015,TRUE,V/2345_2270,Chq_2270,true,88.51,8/28/2015
+460,,Gareth Gozo Fuel_August 2015,Gareth Dimech,361.59,8/31/2015,TRUE,V/2348_2274,Chq_2274,true,361.59,8/31/2015
+493,,3 Packets Punched Pockets ,Srdjan ,33.9,9/4/2015,TRUE,,,true,33.9,9/4/2015
+493,,Srdjan 15 packets punched pockets ,Srdjan ,169.5,9/11/2015,TRUE,,,true,169.5,9/11/2015
+493,,"Srdjan 2 Files , 1 packet papers + 1 divider",Srdjan ,4.93,9/14/2015,TRUE,,,true,4.93,9/14/2015
+1000,,Michelle Tickets ,Michelle Camilleri,440.74,10/7/2015,TRUE,V/2380_2301,Chq_2301,true,440.74,10/7/2015
+460,,Adrian Gozo Fuel_Sept 2015,Adrian Davison,176.01,9/30/2015,TRUE,V/2421_2335,Chq_2335,true,176.01,12/2/2015
+460,,Adrian Gozo Fuel_Oct 2015,Adrian Davison,190.75,10/31/2015,TRUE,V/2422_2335,Chq_2335,true,190.75,12/2/2015
+460,,Adrian Gozo Tickets _Oct 2015,Adrian Davison,93.14,10/31/2015,TRUE,V/2422A_2335,Chq_2335,true,93.14,12/2/2015
+460,,Adrian Gozo Fuel_Nov 2015,Adrian Davison,129.36,11/30/2015,TRUE,V/2423_2335,Chq_2335,true,129.36,12/2/2015
+460,,Adrian Gozo Tickets_Nov 2015,Adrian Davison,199.58,11/30/2015,TRUE,V/2423A_2335,Chq_2335,true,199.58,12/2/2015
+460,,Gareth Gozo Fuel_Sept 2015,Gareth Dimech,421.86,9/30/2015,TRUE,V/2442_2341,Chq_2341,true,421.86,12/11/2015
+460,,Gareth Gozo Fuel_Oct 2015,Gareth Dimech,441.95,10/31/2015,TRUE,V/2443_2341,Chq_2341,true,441.95,12/11/2015
+460,,Gareth Gozo Tickets_Oct 2015,Gareth Dimech,243.75,10/31/2015,TRUE,V/2443A_2341,Chq_2341,true,243.75,12/11/2015
+460,,Gareth Gozo Fuel_Nov 2015,Gareth Dimech,421.86,11/30/2015,TRUE,V/2444_2341,Chq_2341,true,421.86,12/11/2015
+460,,Gareth Gozo Tickets_Nov 2015,Gareth Dimech,93.14,11/30/2015,TRUE,V/2444a_2341,Chq_2341,true,93.14,12/11/2015
+460,,Gareth Gozo Stationery ,Gareth Dimech,48.31,11/30/2015,TRUE,V/2445_2341,Chq_2341,true,48.31,12/11/2015
+460,,Gareth Gozo Fuel_Dec 2015,Gareth Dimech,200.89,1/7/2016,TRUE,V/2472_2364,Chq_2364,true,200.89,1/7/2016
+460,,Gareth Gozo Tickets_Dec 2015,Gareth Dimech,133.05,1/7/2016,TRUE,V/2472A_2364,Chq_2364,true,133.05,1/7/2016
+460,,Stephen Gozo Tickets_ June - Dec 2015,Stephen Grech,136.99,1/11/2016,TRUE,V/2482_2368,Chq_2368,true,136.99,1/11/2016
+460,,Adrian Gozo Fuel_Dec 2015,Adrian Davison,43.12,1/12/2016,TRUE,V/2486_2369,Chq_2369,true,43.12,1/12/2016
+460,,Adrian Gozo Tickets_Dec 2015,Adrian Davison,66.53,1/12/2016,TRUE,V/2486A_2369,Chq_2369,true,66.53,1/12/2016
+476,,HP Officejet 7612 + Cable ,Scan ,225.26,1/27/2016,TRUE,V/2491,Chq_2379,true,225.26,1/27/2016
+476,,1 Pack A4 + A3 and A3 File,Srdjan ,15.3,1/28/2016,TRUE,,,true,15.3,1/28/2016
+460,,Gareth_Fuel_Jan 2016,Gareth Dimech,98.16,1/28/2016,TRUE,V/2493_2381,Chq_2381,true,98.16,1/28/2016
+460,,Gareth_Gozo Tickets_ Jan 2016,Gareth Dimech,53.22,1/28/2016,TRUE,V/2493A_2381,Chq_2381,true,53.22,1/28/2016
+488,,Patrick_Various items_Project 0488,Patrick Muscat,69.4,1/29/2016,TRUE,V/2498_2385,Chq_2385,true,69.4,1/29/2016
+476,,HP For site printer ,Srdjan ,37.19,2/25/2016,TRUE,V/2524_2405,Chq_2405,true,37.19,2/25/2016
+460,,Gareth_Fuel_Feb 2016,Gareth Dimech,106.83,2/29/2016,TRUE,V/2528_2408,Chq_2408,true,106.83,2/29/2016
+460,,Gareth_Gozo Tickets_ Feb 2016,Gareth Dimech,66.53,2/29/2016,TRUE,V/2528A_2408,Chq_2408,true,66.53,2/29/2016
+476,,Cartridges ,Srdjan ,23.72,3/2/2016,TRUE,V/2535_2416,Chq_2416,true,23.72,3/2/2016
+476,,"Srdjan_3 files, 2 Pkts dividers and 1 packet A4 Paper ",Srdjan ,5.66,3/24/2016,TRUE,,,true,5.66,3/24/2016
+460,,Gareth_Fuel_March 2016,Gareth Dimech,80.35,4/7/2016,TRUE,V/2572_2442,Chq_2442,true,80.35,4/7/2016
+460,,Gareth_Gozo Tickets_March 2016,Gareth Dimech,53.22,4/7/2016,TRUE,V/2572A_2442,Chq_2442,true,53.22,4/7/2016
+460,,Gareth_Fuel_April 2016,Gareth Dimech,80.35,4/29/2016,TRUE,V/2586_2459,Chq_2459,true,80.35,4/29/2016
+460,,Gareth_Gozo Tickets_April 2016,Gareth Dimech,53.22,4/29/2016,TRUE,V/2586_2459a,Chq_2459,true,53.22,4/29/2016
+547,,Peter Zammit_America Tkts ,Peter Zammit,2745.64,5/4/2016,TRUE,V/2592_2464,Chq_2464,true,2745.64,5/4/2016
+564,,Peter Zammit_America Tkts ,Peter Zammit,2745.64,5/4/2016,TRUE,V/2592_2464,Chq_2464,true,2745.64,5/4/2016
+476,,Srdjan_Cartridge ,Srdjan ,25.34,5/17/2016,TRUE,V/2611_2475,Chq_2475,true,25.34,5/17/2016
+460,,Gareth_Fuel_May 2016,Gareth Dimech,20.09,5/31/2016,TRUE,V/2616_2485,Chq_2485,true,20.09,5/31/2016
+460,,Gareth_Gozo Tikets_May 2016,Gareth Dimech,13.31,5/31/2016,TRUE,V/2616A_2485,Chq_2485,true,13.31,5/31/2016
+476,,Srdjan_Scan,Srdjan ,11.86,5/31/2016,TRUE,PC_June ,Pcash,true,11.86,6/3/2016
+476,,Srdjan_Scan,Srdjan ,23.73,7/5/2016,TRUE,PC_July ,Pcash,true,23.73,7/5/2016
+565,,Fred_Gozo Tkts_April till July 16,Frederick Grech,72.1,7/7/2016,TRUE,V/2649_2509,Chq_2509,true,72.1,7/7/2016
+476,,Srdjan_Scan,Srdjan ,29.9,7/28/2016,TRUE,V/2657_2519,Chq_2519,true,29.9,7/28/2016
+476,,David_Scan,David Micallef ,11.27,7/26/2016,TRUE,V/2667_2533,Chq_2533,true,11.27,8/2/2016
+476,,David_Parking Tickets ,David Micallef ,4,8/2/2016,TRUE,V/2668A_2533,Chq_2533,true,4,8/2/2016
+565,,Tom_Gozo_Fuel Aug,Tom ,15.09,8/31/2016,TRUE,V/2681_2548,Chq_2548,true,15.09,8/31/2016
+565,,Tom_Gozo_Tkts Aug,Tom ,15.7,8/31/2016,TRUE,V/2681A_2548,Chq_2548,true,15.7,8/31/2016
+565,,Peter_Gozo Tkt,Peter Zammit,15.7,9/16/2016,TRUE,PC_Sept ,Petty Cash,true,15.7,9/16/2016
+476,,Nazzjon _ACM 2000,Medialink Comm,324,9/5/2016,TRUE,V/2691,Chq_2558,true,324,9/5/2016
+476,,L-Orizzont_ACM 2000,Union print,179.19,9/5/2016,TRUE,v/2692,Chq_2556,true,179.19,9/5/2016
+476,,Times of Malta_ACM2000,Allied newspapers ,219.45,9/5/2016,TRUE,V/2694,Chq_2694,true,219.45,9/5/2016
+476,,L-Orizzont_ACM 3000,Union print,179.19,9/20/2016,TRUE,v/2699,Chq_2562,true,179.19,9/20/2016
+476,,Times of Malta_ACM3000,Allied newspapers ,219.45,9/20/2016,TRUE,V/2702,Chq_2564,true,219.45,9/20/2016
+476,,Nazzjon_ACM3000,Medialink Comm,324,9/20/2016,TRUE,V/2703,Chq_2563,true,324,9/20/2016
+476,,Cartridges  ,David Micallef ,13.3,10/6/2016,TRUE,V/2715_2578,Chq_2578,true,13.3,10/6/2016
+476,,Parking tickets ,David Micallef ,3,10/6/2016,TRUE,V/2715a_2578,Chq_2578,true,3,10/6/2016
+476,,Parking tickets ,David Micallef ,3,10/6/2016,TRUE,V/2715b_2578,Chq_2578,true,3,10/6/2016
+466,,Printing,Engineers Centre ,373.5,10/13/2016,TRUE,V/2722,Chq_2586,true,373.5,10/13/2016
+565,,James Gozo ticket,James ,15.7,11/1/2016,TRUE,V/2743A_2601,Chq_2601,true,15.7,11/1/2016
+476,,Srdjan_Cartridge ,Srdjan ,90.99,11/3/2016,TRUE,V/2744_2602,Chq_2602,true,90.99,11/3/2016
+565,,James Gozo ticket,James ,15.7,12/6/2016,TRUE,V/2774A_2628,Chq_2628,true,15.7,12/6/2016
+460,,Gareth_Gozo Tkt_Sept,Gareth Dimech,31.4,12/6/2016,TRUE,V/2775A_2629,Chq_2629,true,31.4,12/6/2016
+460,,Gareth_Gozo Tkt_Oct,Gareth Dimech,31.4,12/6/2016,TRUE,V/2776A_2629,Chq_2629,true,31.4,12/6/2016
+565,,Peter_Gozo Tkt,Peter Zammit,45.35,1/16/2017,TRUE,Visa,Visa ,true,45.35,1/16/2017
+587,,Consultancy service,b.Nel,1700,7/4/2016,TRUE,V/2832,Chq_2680,true,1700,2/28/2017
+565,,Gozo Channel Tkts ,Peter Zammit,114.32,3/28/2017,TRUE,Visa_March,Visa_March,true,114.32,3/28/2017
+565,,David Gozo Tkt_March,David Micallef ,8.15,4/6/2017,TRUE,V/17A_0014,Chq_0014,true,8.15,4/6/2017
+587,,b.NEL ,b.Nel,1700,7/4/2016,TRUE,V/2831_2695,Chq_2695,true,1700,4/25/2017
+593,,b.NEL ,b.Nel,150,3/13/2017,TRUE,V/0009,Chq_40,true,150,5/31/2017
+565,,Fred Gozo Tickets ,Frederick Grech,294.48,8/29/2017,TRUE,V/115_CHQ88,Chq_88,true,294.48,8/29/2017
+601,,CRC2000 - Certf 4 ,SPHERE,20077.64,6/26/2017,TRUE,V/92,Chq_150,true,20077.64,11/30/2017
+601,,CRC2000 - Cerf 5,SPHERE,5076.91,7/31/2017,TRUE,V/93,Chq_94,true,5076.91,9/4/2017
+601,,CRC2000 - Certf 6,SPHERE,11245.27,8/11/2017,TRUE,V/110,Chq_94,true,11245.27,9/4/2017
+565,,Lawrence_Gozo Ticket,Lawrence ,8.15,8/29/2017,TRUE,V/122A,Chq_96,true,8.15,9/6/2017
+601,,CRC5200 -  Certf 1 to 4,SPHERE,959.75,10/4/2017,TRUE,V/138,Chq_121,true,959.75,10/31/2017
+601,,CRC2000 - Certf 7,SPHERE,6224.99,10/4/2017,TRUE,V/139,Chq_121,true,6224.99,10/31/2017
+601,,CRC4000 - Certf 1 ,SPHERE,840,10/4/2017,TRUE,V/140,Chq_121,true,840,10/31/2017
+565,,Fred Gozo Tickets ,Frederick Grech,78.5,10/20/2017,TRUE,V/155A_CHQ113,Chq_113,true,78.5,10/20/2017
+431,,T14 - Mekanika,Mekanika ,52470,10/27/2017,TRUE,V/161,Chq_122,true,52470,10/27/2017
+460,,Gareth_Gozo ticket,Gareth Dimech,15.7,1/1/2017,TRUE,V/178A_CHQ133,Chq_133,true,15.7,11/13/2017
+601,,CRC2000 - Certf 10,SPHERE,2894.51,11/16/2017,TRUE,V/186,Chq_184,true,2894.51,1/25/2018
+601,,CRC5200 - Certf 6,SPHERE,1128.51,11/16/2017,TRUE,V/187,Chq_184,true,1128.51,1/25/2018
+601,,CRC4000 - Certf 2,SPHERE,575.69,11/16/2017,TRUE,V/188,Chq_184,true,575.69,1/25/2018
+601,,CRC2000 - Certf 9,SPHERE,7042,10/30/2017,TRUE,V/163,Chq_184,true,7042,1/25/2018
+601,,CRC5200 - Certf 5,SPHERE,544.51,10/30/2017,TRUE,V/162,Chq_184,true,544.51,1/25/2018
+601,,CRC2000 - Certf 11,SPHERE,5340.01,1/15/2018,TRUE,V/220,Chq_277,true,5340.01,7/9/2018
+601,,CRC4000 - Certf 3,SPHERE,982.76,1/15/2018,TRUE,V/221,Chq_238,true,982.76,4/30/2018
+601,,CRC4000 - Certf 4,SPHERE,3397.13,2/26/2018,TRUE,V/248,Chq_238,true,3397.13,4/30/2018
+601,,CRC2000 - Certf 12,SPHERE,3138.7,2/26/2018,TRUE,V/249,Chq_277,true,3138.7,7/9/2019
+601,,CRC5200 - Certf 9,SPHERE,3581.81,2/26/2018,TRUE,V/250,Chq_2509,true,3581.81,7/9/2019
+597,,Preluna Project,Eng Services Ltd ,3500,1/5/2018,TRUE,V/213,Chq_231,true,3500,4/23/2018
+601,,CRC4000 - Certf 5,SPHERE,2578.58,4/23/2018,TRUE,V/290,Chq_238,true,2578.58,4/30/2018
+601,,CRC4000 - Certf 6,SPHERE,1019.79,6/11/2018,TRUE,V/318,Chq_312,true,1019.79,9/18/2018
+601,,CRC2000 - Certf 16,SPHERE,3768.55,6/11/2018,TRUE,V/319,Chq_312,true,3768.55,9/18/2018
+601,,CRC5200 - Certf 12,SPHERE,945.07,6/11/2018,TRUE,V/320,Chq_312,true,945.07,9/18/2018
+601,,CRC5200 - Certf 13,SPHERE,988.26,7/9/2018,TRUE,V/347,Chq_312,true,988.26,9/18/2018
+601,,CRC4000 - Certf 7,SPHERE,1244.75,7/9/2018,TRUE,V/346,Chq_312,true,1244.75,9/18/2018
+601,,CRC5200 - Certf 14,SPHERE,762.4,8/23/2018,TRUE,V/368,Chq_312,true,762.4,9/18/2018
+601,,CRC2000 - Certf 17,SPHERE,1911.16,8/23/2018,TRUE,V/369,Chq_312,true,1911.16,9/18/2018
+640,,Zeri's dinner,Zeri'S ,291.91,8/21/2018,TRUE,Visa_Aug,Visa_Aug,true,291.91,8/21/2018
+640,,ECABS,ECABS,85,8/21/2018,TRUE,PC_August ,Petty Cash,true,85,8/21/2018
+640,,Baguettes,Yummy's,38,8/21/2018,TRUE,PC_August ,Petty Cash,true,38,8/21/2018
+640,,Dinner,Maestrale Gourmet,102,10/11/2018,TRUE,V/404_CHQ328,Chq_328,true,102,10/11/2018
+601,,CRC2000 - Certf 18,SPHERE,2860.37,8/31/2018,TRUE,V/408,Chq_360,true,2860.37,11/29/2018
+601,,CRC4000 - Certf 9,SPHERE,6096.06,10/22/2018,TRUE,V/409,Chq_360,true,6096.06,11/29/2018
+601,,CRC5200 - Certf 16,SPHERE,434.57,10/22/2018,TRUE,V/410,Chq_360,true,434.57,11/29/2018
+601,,CRC4000 - Certf 10,SPHERE,2537.15,11/13/2018,TRUE,V/426,Chq_360,true,2537.15,11/29/2018
+601,,CRC4500 - Certf 7,SPHERE,1339.54,11/13/2018,TRUE,V/427,Chq_360,true,1339.54,11/29/2018
+640,,Master plan Stage 0 and 1,Airsight,7680,9/14/2018,TRUE,V/429,TRF30/11,true,7680,11/30/2018
+640,,Master plan Stage 2,amd.sigma,39380,11/20/2018,TRUE,V/430,TRF19/12,true,39380,12/19/2018
+640,,Stage 2 - master plan,Grant Thornton,24510,11/20/2018,TRUE,V/431,Chq_435,true,24510,3/1/2019
+640,,Stage 0 and 1 - master plan,Grant Thornton,40000,11/2/2018,TRUE,V/432,Chq_357,true,40000,11/27/2018
+640,,Stage 2 - master plan,Airsight,6900,11/28/2018,TRUE,V/438,TRF28/01,true,6900,1/28/2019
+601,,CRC4000 - Certf 11,SPHERE,3031.68,1/11/2019,TRUE,V/473,Chq_461,true,3031.68,4/17/2019
+601,,CRC4500 - Certf 9,SPHERE,343.59,1/11/2019,TRUE,V/474,Chq_461,true,343.59,4/17/2019
+601,,CRC5200 - Certf 17,SPHERE,155.95,1/11/2019,TRUE,V/475,Chq_461,true,155.95,4/17/2019
+640,,Stage 3 - master plan 50%,amd.sigma,17545,12/21/2018,TRUE,V/477,TRF15/02,true,17545,2/15/2019
+650,,Transport malta wardens ,Transport malta,132.16,2/12/2019,TRUE,V/503,TRF12/02,true,132.16,2/12/2019
+650,,mia permit,MIA,250,2/11/2019,TRUE,V/501,TRF11/02,true,250,2/11/2019
+640,,Stage 3 - master plan 100%,amd.sigma,17545,2/19/2019,TRUE,V/510,TRF23/04,true,17545,4/23/2019
+640,,Stage 4 - master plan 80%,amd.sigma,28072,2/26/2019,TRUE,V/514,TRF16/04,true,28072,4/16/2019
+601,,CRC2000 - Certf 19,SPHERE,2423.08,2/28/2019,TRUE,V/519,Chq_461,true,2423.08,4/17/2019
+640,,Stage 4 - master plan 20% and Stage 5 - master plan 80%,amd.sigma,16698,3/27/2019,TRUE,V/530,TRF18/04,true,16698,4/18/2019
+601,,CRC2000 - Certf 20,SPHERE,1635.05,3/28/2019,TRUE,V/531,Chq_461,true,1635.05,4/17/2019
+601,,CRC4500 - Certf 10,SPHERE,347.78,4/17/2019,TRUE,V/549,Chq_461,true,347.78,4/17/2019
+640,,,amd.sigma,2420,5/2/2019,TRUE,V/557,TRF11/07,true,2420,7/11/2019
+584,,Arms ,Arms ,40,6/12/2019,TRUE,V/582_CHQ493,Chq_493,true,40,6/12/2019
+640,,"Stage 3,4 and 5 Masterplan",Grant Thornton,34830,6/12/2019,TRUE,V/585,Chq_515,true,34830,7/9/2019
+640,,"Stage 3,4 and 5 Masterplan",Airsight,6187.5,6/18/2019,TRUE,V/590,TRF11/07,true,6187.5,7/11/2019
+601,,CRC4500 - Certf 3,SPHERE,372.09,3/14/2018,TRUE,V/597,Chq_523,true,372.09,7/19/2019
+601,,CRC5500 - Certf 2,SPHERE,736.68,3/14/2018,TRUE,V/598,Chq_523,true,736.68,7/19/2019
+601,,CRC5200 - Certf 10,SPHERE,765.48,4/2/2018,TRUE,V/599,Chq_523,true,765.48,7/19/2019
+601,,CRC2000 - Certf 13,SPHERE,2861.02,4/2/2018,TRUE,V/600,Chq_523,true,2861.02,7/19/2019
+601,,CRC4000 - Certf 12,SPHERE,2066.93,5/10/2019,TRUE,V/647,Chq_621,true,2066.93,12/19/2019
+601,,CRC4000 - Certf 13,SPHERE,2885.25,7/22/2019,TRUE,V/648,Chq_621,true,2885.25,12/19/2019
+680,,Meteorological Data,MIA,50,9/26/2019,TRUE,V/658,TRF30/09,true,50,9/30/2019
+680,,Mark_Lunch out with clients,Cafe San Marino,52.5,9/19/2019,TRUE,PC-Sep,Petty Cash,true,52.5,9/19/2019
+680,,Mark_Gozo Parking Ticket,Mark,1.5,9/19/2019,TRUE,PC-Sep,Petty Cash,true,1.5,9/19/2019
+680,,Mark_ Gozo Ferry Tickets,Mark,25,9/19/2019,TRUE,PC-Sep,Petty Cash,true,25,9/19/2019
+547,,Purchasing of Eurocodes,MCCAA,223,9/30/2019,TRUE,V/662,Chq_562,true,223,9/30/2019
+659,,Paolo_ Gozo Ferry Ticket,Paolo,15.7,8/6/2019,TRUE,PC-Oct,Petty Cash,true,15.7,10/3/2019
+659,,Paolo_MIA Parking Ticket,Paolo,15,10/2/2019,TRUE,PC-Oct,Petty Cash,true,15,10/3/2019
+680,,Feasibility Study & Impact Ass,Airsight,8050,9/27/2019,TRUE,V/664,TRF14/10,true,8050,10/14/2019
+680,,Meteorological Data,MIA,50,10/23/2019,TRUE,V/678,TRF28/10,true,50,10/28/2019
+680,,Feasibility Study & Impact Ass,Airsight,7360,11/19/2019,TRUE,V/696,TRF29/11,true,7360,11/29/2019
+664,,Taxi service while abroad,GDS,46,11/7/2019,TRUE,PC-Nov,Petty Cash,true,46,11/12/2019
+664,,Lunch with clients abroad,Aramark Restaurant,43,11/7/2019,TRUE,PC-Nov,Petty Cash,true,43,11/12/2019
+664,,Dinner with clients abroad,Haus Muller,70,11/7/2019,TRUE,PC-Nov,Petty Cash, true,70,11/12/2019
+664,,Taxi service while abroad,Robert Taxi,10,11/9/2019,TRUE,PC-Nov,Petty Cash,true,10,11/12/2019
+680,,Mapping Services,Planning Authority,70,12/4/2019,TRUE,V/712,Chq_604,true,70,12/9/2019
+601,,CRC5500 - Certf 4,SPHERE,281.7,10/22/2019,TRUE,V/723,Chq_621,true,281.7,12/19/2019
+601,,CRC4000 - Certf 14,SPHERE,940.35,10/23/2019,TRUE,V/724,Chq_621,true,940.35,12/19/2019
+601,,CRC4500 - Certf 11,SPHERE,259.64,10/23/2019,TRUE,V/725,Chq_621,true,259.64,12/19/2019
+601,,CRC5200 - Certf 19,SPHERE,2112.53,10/23/2019,TRUE,V/726,Chq_621,true,2112.53,12/19/2019
+547,,Register of Mail,Malta Post,2.3,1/18/2020,TRUE,PC-Jan,Petty Cash,true,2.3,1/18/2020
+668,,Parking Tickets_Lawrence,Airport Parking Ltd,5,1/28/2020,TRUE,PC-Jan,Petty Cash,true,5,1/30/2020
+680,,Gozo Ferry Ticket_Mark,Gozo Channel,15.7,3/11/2020,TRUE,PC-Mar,Petty Cash,true,15.7,3/11/2020
+680,,Feasibility Study & Impact Ass,Airsight,24840,3/16/2020,TRUE,V/792,TRF29/05,true,24840,5/29/2020
+609,,Review by CRPD,Joseph H Spiteri,420,2/5/2020,TRUE,V/811,Chq_748,true,420,7/20/2020
+130,,Meteorological Data,MIA,200,4/30/2020,TRUE,V/824,TRF05/05,true,200,5/5/2020
+130,,Ten years modelled wind readings,University of Malta,1000,6/1/2020,TRUE,V/845,TRF03/06,true,1000,6/3/2020
+689,,Gozo Ferry Ticket_Peter,Gozo Channel,15.7,5/25/2020,TRUE,Visa_May,Visa_May2020,true,15.7,5/25/2020
+689,,Gozo Ferry Ticket_Peter & Fred,Gozo Channel,20.35,6/3/2020,TRUE,Visa_June2020,Visa_June 2020,true,20.35,6/3/2020
+649,,Technical Consultancy ,Joe Briffa,1577.12,8/3/2020,TRUE,V/888,TRF17/08,true,1861,8/17/2020
+700,,Large Scale Site Plan,Planning Authority,15,11/18/2020,TRUE,PA Acc,TRF18/11,true,15,11/18/2020
+649,,On Sites Visits - Nov 2020,Shield Consultants,480,11/30/2020,TRUE,V/963,TRF28/12,true,480,12/28/2020
+689,,Gozo Ferry Ticket_Peter & Fred,Gozo Channel,20.35,11/26/2020,TRUE,,,true,20.35,11/26/2020
+689,,Gozo Ferry Ticket_Peter & Fred,Gozo Channel,20.35,12/16/2020,TRUE,,Visa_Dec 2020,true,20.35,12/16/2020
+649,,Borehole Location Phase 3,Rovic Ironmongery,14.06,1/16/2021,TRUE,PC-Jan,Petty Cash,true,14.06,1/20/2021
+649,,2 Parking tickets re Borehole Location Phase 3,MIA Parking,6.78,1/18/2021,TRUE,PC-Jan,Petty Cash,true,6.78,1/20/2021
+650,,Traffic Management,B.Grima & Sons Ltd,7171.2,4/28/2020,TRUE,V/990,TRF29/01,true,7171.2,1/29/2021
+717,,Drwgs of old permit,PA,23.29,1/28/2021,TRUE,,PA acc,true,23.29,1/28/2021
+717,,Ariel Photo,PA,11.69,1/28/2021,TRUE,,PA acc,true,11.69,1/28/2021
+649,,On Sites Visits - Jan 2021,Shield Consultants,960,1/29/2021,TRUE,V/996,TRF01/03,true,960,3/1/2021
+649,,On Sites Visits - Sep 2020,Shield Consultants,480,9/30/2020,TRUE,V/1026,TRF06/04,true,480,4/6/2021
+649,,On Sites Visits - Oct 2020,Shield Consultants,555,10/30/2020,TRUE,V/1027,TRF06/04,true,555,4/6/2021
+649,,On Sites Visits - Dec 2020,Shield Consultants,600,12/31/2020,TRUE,V/1028,TRF06/04,true,600,4/6/2021
+649,,On Sites Visits - Feb 2021,Shield Consultants,840,2/25/2020,TRUE,V/1029,TRF06/04,true,840,4/6/2021
+649,,Hilti - Hole Drilling/Ins/Passes,Terracore,912.5,2/20/2021,TRUE,V/1036,TRF06/04,true,912.5,4/6/2021
+649,,On Site Visits - March 2021,Shield Consultants,840,3/31/2021,TRUE,V/1042,TRF03/05,true,840,5/3/2021
+649,,Soil Plate bearing & Particle size Testing,Terracore,598.68,3/11/2021,TRUE,V/1047,TRF03/05,true,598.68,5/3/2021
+649,,On Site Visits - Apr 2021,Shield Consultants,720,4/30/2021,TRUE,V/1063,TRF31/05,true,720,5/31/2021
+520,,Fidic online Contracts (RFP 1066),Fidic,390,4/14/2021,TRUE,,Visa_Apr 2021,true,390,4/14/2021
+649,,Various Testing,Terracore,4015.8,5/4/2021,TRUE,V/1072,DIRPAY 30/06,true,4015.8,6/30/2021
+649,,Various Testing,Terracore,218.09,5/14/2021,TRUE,V/1073,DIRPAY 30/06,true,218.09,6/30/2021
+649,,Various Testing,Terracore,654.26,5/17/2021,TRUE,V/1074,DIRPAY 30/06,true,654.26,6/30/2021
+649,,Various Testing,Terracore,698.4,5/24/2021,TRUE,V/1083,DIRPAY 02/08,true,698.4,8/2/2021
+649,,Various Testing,Terracore,436.18,5/26/2021,TRUE,V/1084,DIRPAY 02/08,true,436.18,8/2/2021
+649,,Various Testing,Terracore,436.18,5/27/2021,TRUE,V/1085,DIRPAY 02/08,true,436.18,8/20/2021
+649,,On Site Visits - May 2021,Shield Consultants,960,5/28/2021,TRUE,V/1088,DIRPAY 30/06,true,960,6/30/2021
+649,,Parking Tickets,Michael Cutajar,5.93,6/30/2021,TRUE,V/1094,DIRPAY 30/06,true,5.93,6/30/2021
+649,,On Site Visits - June 2021,Shield Consultants,840,6/30/2021,TRUE,V/1109,DIRPAY 02/08,true,991.2,8/2/2021
+649,,Various Testing,Terracore,436.18,6/4/2021,TRUE,V/1096,DIRPAY 31/08,true,436.18,8/31/2021
+649,,Various Testing,Terracore,340,6/9/2021,TRUE,V/1097,DIRPAY 31/08,true,340,8/31/2021
+649,,Various Testing,Terracore,436.18,6/11/2021,TRUE,V/1098,DIRPAY 31/08,true,436.18,8/31/2021
+649,,Various Testing,Terracore,218.09,6/14/2021,TRUE,V/1099,DIRPAY 31/08,true,218.09,8/31/2021
+649,,Various Testing,Terracore,654.26,6/22/2021,TRUE,V/1107,DIRPAY 31/08,true,654.26,8/31/2021
+649,,On Site Visits -  July 2021,Shield Consultants,840,7/30/2021,TRUE,V/1133,DIRPAY 01/10,true,840,10/1/2021
+649,,Bank Charges for Bank Guarantee,BOV,542.5,7/14/2020,TRUE,,DD17/07,true,542.5,7/17/2020
+649,,Bank Charges for Bank Guarantee Renewal,BOV,542.5,7/9/2021,TRUE,,DD09/07,true,542.5,7/9/2021
+649,,MIA Parking_Michael,MIA Parking,11.5,9/14/2021,TRUE,PC_Sep21,PC_Sep21,true,11.5,9/14/2021
+649,,On Site Visits -  August 2021,Shield Consultants,360,8/31/2021,TRUE,V/1156,DIRPAY 01/10,true,360,10/1/2021
+649,,On Site Visits - Oct 2021,Shield Consultants,240,10/29/2021,TRUE,V/1183,DIRPAY 30/11,true,240,11/30/2021
+649,,On Site Visits - Nov 2021,Shield Consultants,950,11/30/2021,TRUE,V/1203,DIRPAY,true,950,12/28/2021
+649,,On Site Visits - Dec 2021,Shield Consultants,720,12/31/2021,TRUE,V/1219,DIRPAY,true,720,2/1/2022
+649,,"Technical reviews, meetings, guidance & advice",Joe Briffa,854.24,1/13/2022,TRUE,V/1227,DIRPAY 14/01,true,854.24,1/14/2021
+649,,On Site Visits - Jan 2022,Shield Consultants,720,1/31/2022,TRUE,V/1243,DIRPAY 28/02,true,720,2/28/2022
+649,,On Site Visits - Feb 2022,Shield Consultants,480,2/28/2022,TRUE,V/1260,DIRPAY 01/04,true,480,4/1/2022
+649,,On Site Visits - Mar 2022,Shield Consultants,480,3/31/2022,TRUE,V/1275,DIRPAY 02/05,true,480,5/2/2022
+649,,Various Testing -Phase 3,Terracore,94.5,2/17/2022,TRUE,V/1286,DIRPAY 02/05,true,94.5,5/2/2022
+649,,Various Testing -Phase 3,Terracore,496.8,3/8/2022,TRUE,V/1288,DIRPAY 02/05,true,496.8,5/2/2022
+649,,Various Testing -Phase 3,Terracore,993.6,4/11/2022,TRUE,V/1289,DIRPAY 02/05,true,993.6,5/2/2022
+649,,Various Testing -Phase 3,Terracore,165.6,4/13/2022,TRUE,V1290,DIRPAY 02/05,true,165.6,5/2/2022
+763,,Site Visit by Fab 27th April,Cool Ride-Pooling,6.74,4/27/2022,TRUE,V/1293,DIRPAY 02/05,true,6.74,5/2/2022
+649,,On Site Visits - Apr 2022,Shield Consultants,840,4/29/2022,TRUE,V/1299,DIRPAY 30/05,true,840,5/30/2022
+649,,Various Testing -Phase 3,Terracore,5099.2,4/13/2022,TRUE,V/1291,DIRPAY 30/05,true,5099.2,5/30/2022
+649,,Various Testing -Phase 3,Terracore,1104.6,5/12/2022,TRUE,V/1287,DIRPAY 30/05,true,1104.6,5/30/2022
+649,,On Site Visits - May 2022,Shield Consultants,480,5/31/2022,TRUE,V/1311,DIRPAY 04/07,true,480,7/4/2022
+649,,Various Testing -Phase 3,Terracore,828,5/9/2022,TRUE,V/1318,DIRPAY 04/07,true,828,7/4/2022
+649,,Various Testing -Phase 3,Terracore,3288.6,6/14/2022,TRUE,V/1320,DIRPAY 04/07,true,3288.6,7/4/2022
+649,,Various Testing -Phase 3,Terracore,3118.5,6/21/2022,TRUE,V/1321,DIRPAY 04/07,true,3118.5,7/4/2022
+751,,Registered Letters to neighbours,Malta Post,8.61,7/5/2022,TRUE,PC-July22,PC-July22,true,8.61,7/5/2022
+649,,On Site Visits - June 2022,Shield Consultants,720,6/30/2022,TRUE,V/1335,DIRPAY 014/08,true,720,8/1/2022
+649,,Various Testing -Phase 3,Terracore,1336.5,7/18/2022,TRUE,V/1347,DIRPAY 01/09,true,1336.5,9/1/2022
+649,,On Site Visits - July 2022,Shield Consultants,840,7/29/2022,TRUE,V/1353,DIRPAY 01/09,true,840,9/1/2022
+649,,On Site Visits - Aug 2022,Shield Consultants,480,8/31/2022,TRUE,V/1367,DIRPAY 3/10,true,480,10/3/2022
+649,,On Site Visits - Sep 2022,Shield Consultants,840,9/30/2022,TRUE,V/1380,DIRPAY 31/10,true,840,10/31/2022
+649,,Various Testing -Phase 3,Terracore,331.2,9/12/2022,TRUE,V/1384,DIRPAY 31/10,true,331.2,10/31/2022
+649,,Various Testing -Phase 3,Terracore,100,9/16/2022,TRUE,V/1385,DIRPAY 31/10,true,100,10/31/2022
+689,,Ferry Tickets_Frederick,Gozo Channel,31.4,10/31/2022,TRUE,V/1402,DIRPAY 31/10,true,31.4,10/31/2022
+649,,Bank Charges for Bank Guarantee Renewal,BOV,542.5,6/28/2022,TRUE,,DD28/06,true,542.5,6/28/2022
+649,,Various Testing -Phase 3,Terracore,2783.7,9/6/2022,TRUE,V/1397,DIRPAY 01/12,true,2783.7,12/1/2022
+649,,Various Testing -Phase 3,Terracore,331.2,10/20/2022,TRUE,V/1398,DIRPAY 01/12,true,331.2,12/1/2022
+649,,Various Testing -Phase 3,Terracore,1606.5,10/24/2022,TRUE,V/1399,DIRPAY 01/12,true,1606.5,12/1/2022
+649,,Various Testing -Phase 3,Terracore,141.75,10/26/2022,TRUE,V/1400,DIRPAY 01/12,true,141.75,12/1/2022
+649,,On Site Visits - Oct 2022,Shield,1080,10/31/2022,TRUE,V/1409,DIRPAY 01/12,true,1080,12/1/2022
+649,,Various Testing -Phase 3,Terracore,63,11/10/2022,TRUE,V/1404,DIRPAY 01/12,true,63,12/1/2022
+649,,Various Testing -Phase 4,Terracore,63,11/10/2022,TRUE,V/1405,DIRPAY 01/12,true,63,12/1/2022
+649,,Various Testing -Phase 3,Terracore,63,11/2/2022,TRUE,V/1418,DIRPAY 28/12,true,63.3,12/28/2022
+649,,Witnessing of Softening Point,Terracore,31.5,11/4/2022,TRUE,V/1419,DIRPAY 28/12,true,31.5,12/28/2022
+649,,Witnessing of Softening Point,Terracore,63,11/11/2022,TRUE,V/1420,DIRPAY 28/12,true,63.3,12/28/2022
+649,,Witnessing of Softening Point,Terracore,94.5,12/1/2022,TRUE,V/1421,DIRPAY 28/12,true,94.5,12/28/2022
+649,,Witnessing of Softening Point,Terracore,31.5,12/2/2022,TRUE,V/1422,DIRPAY 28/12,true,31.5,12/28/2022
+649,,Concrete Testing - Phase 3,Terracore,82.8,11/24/2022,TRUE,V/1424,DIRPAY 28/12,true,82.8,12/28/2022
+649,,Witnessing of Softening Point,Terracore,63,11/11/2022,TRUE,V/1425,DIRPAY 28/12,true,63,12/28/2022
+649,,On Site Visits - Nov 2022,Shield,720,11/30/2022,TRUE,V/1433,DIRPAY 28/12,true,720,12/28/2022
+775,,Valletta Local Council No Parking Permit,Valletta Local Council,10,1/6/2023,TRUE,V/1441,DIRPAY 06/1/2023,true,10,1/6/2023
+700,,Plants Software_MIDI,Plant Catalogue,131.98,11/25/2022,TRUE,Visa_Dec 2022,Visa_Dec 2022,true,131.98,11/25/2022
+700,,Plants Software_MIDI,Plant Catalogue,267.93,1/6/2023,TRUE,Visa_Jan 2023,Visa_Jan 2023,true,267.93,1/6/2023
+649,,On Site Visits - Dec 2022,Shield,600,12/23/2022,TRUE,V/1460,DIRPAY 02/3/2023,true,600,3/2/2023
+689,,Ferry Ticket_Zach,Gozo Channel,15.7,2/2/2023,TRUE,PC_Feb23,PC_Feb23,true,15.7,2/2/2023
+689,,Ferry Ticket_Zach,Gozo Channel,1570,3/29/2023,TRUE,PC_Mar23,PC_Mar23,true,15.7,3/29/2023
+649,,Witnessing of Softening Point,Terracore,47.25,12/5/2022,TRUE,V/1481,DIRPAY 01/4/2023,true,47.25,4/1/2023
+649,,Various Testing,Terracore,3252.15,12/12/2022,TRUE,V/1482,DIRPAY 01/4/2023,true,3252.15,4/1/2023
+649,,Various Testing,Terracore,757.35,12/16/2022,TRUE,V/1483,DIRPAY 01/4/2023,true,757.35,4/1/2023
+649,,Various Testing,Terracore,282.15,12/29/2022,TRUE,V/1484,DIRPAY 01/4/2023,true,282.15,4/1/2023
+649,,Various Testing,Terracore,742.5,2/3/2023,TRUE,V/1485,DIRPAY 01/4/2023,true,742.5,4/1/2023
+689,,Ferry Ticket_Frederick,Gozo Channel,51.34,5/3/2023,TRUE,V/1503,DIRPAY 03/5/2023,true,51.34,5/3/2023
+784,,MCP Parking_Elena,MCP Parking,23.64,3/30/2023,TRUE,PC_Mar23,PC_Mar23,true,23.64,5/30/2023
+784,,MCP Parking_Elena,MCP Parking,18.05,5/3/2023,TRUE,V/1505,DIRPAY 03/5/2023,true,18.05,5/3/2023
+689,,Ferry Ticket_Zach,Gozo Channel,15.7,5/12/2023,TRUE,PC_May23,PC_May23,true,15.7,5/12/2023
+649,,Consultancy service,B.NEL,1580,12/11/2020,TRUE,V/1519,DIRPAY 01/6/2023,true,1580,6/1/2023
+649,,Consultancy service,B.NEL,3000,4/28/2023,TRUE,V/1520,DIRPAY 01/6/2023,true,3000,6/1/2023
+784,,MCP Parking_Elena,MCP Parking,23.13,5/26/2023,TRUE,V/1530,DIRPAY 01/6/2023,true,23.13,6/1/2023
+649,,Bank Charges for Bank Guarantee Renewal,BOV,542.5,6/23/2023,TRUE,,DD23/06,true,542.5,6/23/2023
+784,,MCP Parking_Elena,MCP Parking,24.15,7/31/2023,TRUE,V/1567,DD07/08,true,24.15,8/7/2023
+784,,Parking_Richard,Floriana Parking,11.86,7/31/2023,TRUE,V/1566,DD07/08,true,11.86,8/7/2023
+785,,PG Parking_Elena,PG Parking,1.69,7/31/2023,TRUE,V/1567,DD07/08,true,1.69,8/7/2023
+689,,Ferry Ticket_Zach,Gozo Channel,14.01,7/21/2023,TRUE,V/1565,DD07/08,true,14.01,8/7/2023
+689,,Ferry Ticket_Frederick,Gozo Channel,14.01,8/30/2023,TRUE,PC_Aug23,PC_Aug23,true,14.01,8/30/2023
+689,,Ferry Ticket_Frederick,Gozo Channel,14.01,9/27/2023,TRUE,PC_Oct23,PC_Oct23,true,14.01,10/5/2023
+793,,MIA Parking_Frederick,Airport Parking Ltd,2.97,10/4/2023,TRUE,PC_Oct23,PC_Oct23,true,2.97,10/5/2023
+793,,MIA Parking_Ruth,Airport Parking Ltd,8.47,10/4/2023,TRUE,PC_Oct23,PC_Oct23,true,8.47,10/5/2023
+689,,Ferry Ticket_Frederick (by 2 tickets),Gozo Channel,28.02,10/16/2023,TRUE,PC_Oct,PC_Oct23,true,28.02,10/16/2023
+549,,Registerred Mail to owners for condition reports,Malta Post,60.73,10/17/2023,TRUE,PC_Nov,PC_Nov23,true,60.73,11/17/2023
+802,,Insurance to drive in Airside Restricted Areas_Jurian,Gasan Mamo Ins,44.54,11/20/2023,TRUE,Salary___Dec2023,Salary___Dec2023,true,44.54,12/22/2023
+813,,Bank Charges for Bank Guarantee,Bank Charges,200,1/10/2024,TRUE,,DD10/01,true,200,1/10/2024
+715,,Precipitation Data,MIA,29.81,2/7/2024,TRUE,V/1671,DD 07/02,true,29.81,2/7/2024
+793,,MIA Parking_Ruth & David Mifsud,Airport Parking Ltd,22,1/31/2024,TRUE,PC_Jan24,PC_Jan24,true,22,1/31/2024
+809,,MCP Parking_Zach,MCP Parking,5.5,1/31/2024,TRUE,PC_Jan24,PC_Jan24,true,5.5,1/31/2024
+649,,Sampling & Refilling_instructed by iAS,Bonnici Brothers,283.5,1/1/2024,TRUE,V/1685,DD02/04,true,283.5,4/1/2024
+793,,MIA Parking_David Mifsud,Airport Parking Ltd,23,3/27/2024,TRUE,PC_Mar24,PC_Mar24,true,23,3/27/2024
+659,,Business Dinner with Client,Root 81,260,5/2/2024,TRUE,PC_May24,PC_May24,true,260,5/2/2024
+793,,MIA Parking_Jurian Refalo,Airport Parking Ltd,7.5,5/30/2024,TRUE,PC_May24,PC_May24,true,7.5,5/30/2024
+476,,Included in RFP 1692,Planning Authority,156,6/25/2024,TRUE,V/1733,DD02/07,true,156,7/2/2024
+793,,MIA Parking_David Mifsud,Airport Parking Ltd,17.8,7/31/2024,TRUE,PC_June24,PC_July24,true,17.8,7/31/2024
+837,,Provision of Signed Declaration Letters re Tender submission,3a Accountants,250,7/26/2024,TRUE,V/1756,DD05/09,true,250,9/5/2024
+641,,Survey & Plotting_BOV project - ReCharged BOV INV1818,Alan Micallef Surveyor,187.5,9/10/2024,TRUE,V/1772,DIRPAY 04/10,true,187.5,10/4/2024
+793,,MIA Parking_David Mifsud,Airport Parking Ltd,22.03,9/30/2024,TRUE,PC_Sep24,PC_Sep24,true,22.03,9/30/2024
+793,,MIA Parking_Frederick,Airport Parking Ltd,11.02,9/30/2024,TRUE,PC_Sep24,PC_Sec24,true,11.02,9/30/2024
+689,,Ferry Ticket_Frederick (by 2 tickets),Gozo Channel,28.04,9/30/2024,TRUE,PC_Sep24,PC_Sep24,true,28.04,9/30/2024
+778,,PA Plans_0778 Scerri,PA,46.77,12/5/2024,TRUE,PC_Dec24,PC_Dec24,true,46.77,12/18/2024
+793,,MIA Parking_David Mifsud,Airport Parking Ltd,4,12/20/2024,TRUE,PC_Dec24,PC_Dec24,true,4,12/20/2024
+793,,MIA Parking_David Mifsud,Airport Parking Ltd,2,1/22/2025,TRUE,PC_Jan25,PC_Jan25,true,2,1/31/2025
+793,,MIA Parking_David Mifsud,Airport Parking Ltd,10.5,2/28/2025,TRUE,PC_Feb25,PC_Feb25,true,10.5,2/28/2025
+745,,Tigne Parking_David Mifsud,CT Park Tigne,2.3,2/28/2025,TRUE,PC_Feb25,PC_Feb25,true,2.3,2/28/2025
+850,,ReCharged INDIS INV1775,Alan Micallef Surveyor,2500,3/28/2025,TRUE,V/1867,V/1867,true,2500,4/1/2025
+868,,To Recharge Grant Thornton,Alan Micallef Surveyor,1100,5/13/2025,TRUE,V/1952,V/1952,true,1100,9/10/2025
+868,,To Recharge Grant Thornton,Alan Micallef Surveyor,220,8/29/2025,TRUE,V/1953,V/1953,true,220,10/2/2025
+664,,Reimbursed Patrick      Recharged MFA_RFP1969,Various Sundries,202,10/27/2025,TRUE,PC_Nov25,PC_Nov25,true,202,11/18/2025
+,,421,,,,TRUE,,,true,962167.29,

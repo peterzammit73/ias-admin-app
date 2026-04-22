@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curved Door Structural Tool v15 (Reinf. Plates)</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #d35400;
+            --steel: #95a5a6;
+            --bg: #eceff1;
+            --panel-bg: #ffffff;
+            --border: #cfd8dc;
+            --btn: #0277bd;
+            --link: #2980b9;
+        }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); padding: 20px; margin: 0; display: flex; flex-direction: column; align-items: center; color: #333; }
+        .main-layout { display: flex; flex-wrap: wrap; gap: 20px; max-width: 1400px; width: 100%; align-items: flex-start; }
+        
+        /* --- INPUT PANEL --- */
+        .panel-left { flex: 1; min-width: 320px; background: var(--panel-bg); padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .panel-right { flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 20px; }
+        
+        h2 { margin-top: 0; color: var(--primary); font-size: 1.4rem; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        h3 { font-size: 1.0rem; color: #546e7a; margin-bottom: 10px; margin-top: 20px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        .input-row { display: flex; gap: 10px; }
+        .input-group { margin-bottom: 12px; flex: 1; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85em; color: #555; }
+        input[type="number"], select { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; box-sizing: border-box; transition: border 0.2s; background: #fafafa; }
+        input[type="number"]:focus { border-color: var(--accent); outline: none; background: #fff; }
+        
+        /* Slider */
+        .slider-container { background: #e0e0e0; padding: 10px; border-radius: 6px; margin-bottom: 15px; }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: -6px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #bbb; border-radius: 2px; }
+
+        /* --- STRUCTURAL DATA BOX --- */
+        .calc-box { background: #fff; padding: 20px; border-radius: 8px; border-top: 4px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .calc-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9em; padding-bottom: 4px; border-bottom: 1px dashed #f0f0f0; }
+        .calc-val { font-weight: 700; color: var(--primary); font-family: 'Consolas', monospace; }
+        
+        .rec-box { background: #e3f2fd; padding: 15px; border-radius: 6px; margin-top: 15px; border: 1px solid #bbdefb; }
+        .rec-title { font-weight: bold; color: #0d47a1; font-size: 0.9em; display: block; margin-bottom: 5px; }
+        .rec-text { font-family: 'Consolas', monospace; font-size: 1.1em; color: #333; }
+        .warning-text { color: #c62828; font-weight: bold; font-size: 0.85em; margin-top: 5px; display: none; background: #ffebee; padding: 5px; border-radius: 4px; }
+        
+        /* --- SPECIFICATION TABLE --- */
+        .spec-table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin-top: 10px; }
+        .spec-table th { text-align: left; background: #f5f5f5; padding: 8px; border-bottom: 2px solid #ddd; }
+        .spec-table td { padding: 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+        .spec-link { color: var(--link); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; transition: color 0.2s; }
+        .spec-link:hover { color: #d35400; text-decoration: underline; }
+        
+        /* --- GRAPHICS --- */
+        .drawing-card { background: var(--panel-bg); padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; }
+        .drawing-label { width: 100%; text-align: left; font-size: 0.85em; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        svg { width: 100%; height: auto; border: 1px solid #eee; background: #fafafa; margin-bottom: 10px; }
+        
+        .svg-dim { font-size: 12px; fill: #555; font-family: sans-serif; }
+        .svg-label { font-size: 11px; fill: #333; font-family: sans-serif; font-weight: bold; }
+        .svg-leader { stroke: #333; stroke-width: 1; fill: none; }
+        .svg-steel { fill: #b0bec5; stroke: #546e7a; stroke-width: 1.5; }
+        .svg-wall { stroke: #333; stroke-width: 3; fill: none; stroke-linecap: round; }
+        
+        .btn-dl { 
+            background: var(--btn); color: white; border: none; padding: 8px 16px; border-radius: 4px; 
+            cursor: pointer; font-size: 0.9em; display: flex; align-items: center; gap: 8px; transition: background 0.2s;
+        }
+        .btn-dl:hover { background: #01579b; }
+    </style>
+</head>
+<body>
+
+    <div class="main-layout">
+        <!-- LEFT: Controls -->
+        <div class="panel-left">
+            <h2>Door Engineering v15</h2>
+            
+            <div class="slider-container">
+                <label style="display:flex; justify-content:space-between;">
+                    <span>Swing Simulation</span>
+                    <span id="degVal" style="color:var(--accent)">0°</span>
+                </label>
+                <input type="range" id="swing" min="0" max="90" value="0" oninput="update()">
+            </div>
+
+            <h3>1. Geometry</h3>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Opening Width (Chord)</label>
+                    <input type="number" id="width" value="1400" step="10" oninput="update()">
+                </div>
+                <div class="input-group">
+                    <label>Height (mm)</label>
+                    <input type="number" id="height" value="2200" step="10" oninput="update()">
+                </div>
+            </div>
+            
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Radius (mm)</label>
+                    <input type="number" id="radius" value="1200" step="10" oninput="update()">
+                    <div id="radWarning" class="warning-text">⚠ Radius too small!</div>
+                </div>
+                <div class="input-group">
+                    <label style="color:var(--accent)">Pivot Position (%)</label>
+                    <input type="number" id="pivotPos" value="15" min="5" max="95" oninput="update()">
+                </div>
+            </div>
+
+            <h3>2. Hardware & Material</h3>
+             <div class="input-group">
+                <label>Preferred Hardware Brand</label>
+                <select id="hardwareBrand" onchange="update()">
+                    <option value="rixson">Rixson (Assa Abloy) - Recommended</option>
+                    <option value="dorma">Dorma (Dormakaba)</option>
+                </select>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Glass Width (mm)</label>
+                    <input type="number" id="bW" value="190" oninput="update()">
+                </div>
+                <div class="input-group">
+                    <label>Glass Weight (kg)</label>
+                    <input type="number" id="bKg" value="2.5" step="0.1" oninput="update()">
+                </div>
+            </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Glass Thick (mm)</label>
+                    <input type="number" id="bD" value="80" oninput="update()">
+                </div>
+                <div class="input-group">
+                    <label>Glass Height (mm)</label>
+                    <input type="number" id="bH" value="190" oninput="update()">
+                </div>
+            </div>
+
+            <h3>3. Loads</h3>
+            <div class="input-group">
+                <label>Design Wind Pressure (kPa)</label>
+                <input type="number" id="windLoad" value="1.0" step="0.1" oninput="update()">
+            </div>
+            
+            <div class="calc-box" style="margin-top:20px; border-top-color: #2c3e50;">
+                 <h3 style="margin-top:0">Specifications</h3>
+                 <div id="specContainer"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Calculations & Drawings -->
+        <div class="panel-right">
+            
+            <div class="calc-box">
+                <h3>Analysis</h3>
+                <div class="calc-row"><span>Area:</span><span id="outArea" class="calc-val">-</span></div>
+                <div class="calc-row"><span>Total Mass:</span><span id="outMass" class="calc-val">-</span></div>
+                <div class="calc-row" style="color:#d35400;"><span>Top Pivot Lateral Load:</span><span id="outTopLoad" class="calc-val">-</span></div>
+                <div class="rec-box">
+                    <span class="rec-title">Structural Chassis</span>
+                    <div id="outSteel" class="rec-text">-</div>
+                </div>
+            </div>
+
+            <!-- Drawings -->
+            <div class="drawing-card">
+                <div class="drawing-label">Plan View (Offset Pivot)</div>
+                <svg id="planSvg" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+                <button class="btn-dl" onclick="downloadSVG('planSvg', 'curved_door_plan.svg')">
+                    ⬇ Download Plan (.svg)
+                </button>
+            </div>
+            
+            <div class="drawing-card">
+                <div class="drawing-label">Elevation (Pivot Reinforcement Detail)</div>
+                <svg id="elevSvg" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+                <div style="font-size:0.8em; color:#666; margin-top:5px; display:flex; gap:15px;">
+                    <span style="color:red; font-weight:bold;">-- Horiz. Ladder</span>
+                    <span style="color:blue; font-weight:bold;">-- Vert. Stiffener</span>
+                </div>
+                <button class="btn-dl" onclick="downloadSVG('elevSvg', 'curved_door_elev.svg')">
+                    ⬇ Download Elevation (.svg)
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function update() {
+            const W = parseFloat(document.getElementById('width').value);
+            const H = parseFloat(document.getElementById('height').value);
+            const R = parseFloat(document.getElementById('radius').value);
+            const SWING_DEG = parseFloat(document.getElementById('swing').value);
+            const PIVOT_PCT = parseFloat(document.getElementById('pivotPos').value);
+            const HW_BRAND = document.getElementById('hardwareBrand').value;
+            
+            const bH = parseFloat(document.getElementById('bH').value);
+            const bW = parseFloat(document.getElementById('bW').value);
+            const bD = parseFloat(document.getElementById('bD').value);
+            const bKg = parseFloat(document.getElementById('bKg').value);
+            const windP = parseFloat(document.getElementById('windLoad').value);
+
+            const radWarning = document.getElementById('radWarning');
+            if (R <= W / 2) {
+                radWarning.style.display = 'block';
+                radWarning.innerText = "Radius must be > " + (W/2);
+                return; 
+            } else {
+                radWarning.style.display = 'none';
+            }
+
+            // Calculations
+            const thetaRad = 2 * Math.asin(W / (2 * R));
+            const arcLength = thetaRad * R;
+            const sagitta = R - Math.sqrt(R*R - (W/2)*(W/2));
+            const areaM2 = (arcLength * H) / 1000000;
+
+            const grout = 10;
+            const cols = Math.floor(arcLength / (bW + grout));
+            const rows = Math.floor(H / (bH + grout));
+            const totalBlocks = cols * rows;
+            const glassMass = totalBlocks * bKg;
+            const perimM = (2*H + 2*arcLength)/1000;
+            const steelMass = perimM * 10; 
+            const totalMass = Math.round(glassMass + steelMass);
+            const windForceKN = areaM2 * windP;
+            const topBearingLat = (windForceKN / 2).toFixed(2);
+            
+            // Pivot Geometry Logic
+            const pivotRatio = PIVOT_PCT / 100;
+            const L1 = W * pivotRatio; // Width left of pivot
+            const L2 = W * (1 - pivotRatio); // Width right of pivot
+
+            // Frame Moment & Selection
+            const w_dist = windP * (W/2000); 
+            const h_m = H/1000;
+            const moment = (w_dist * h_m * h_m) / 8; 
+            
+            let steelText = "50x50x5mm SS Angle (Sides/Top)";
+            if (moment > 0.4) steelText = "65x65x6mm SS Angle (Sides/Top)";
+            if (moment > 0.8) steelText = "75x75x8mm SS Angle (Sides/Top)";
+            
+            let railWidth = bD + 20; 
+            if(railWidth < 100) railWidth = 100;
+            let bottomRailText = `100x${railWidth}x6mm RHS (Box)`;
+
+            // Reinforcement Logic
+            let hReinf = "Every 2nd Course";
+            let vReinf = "Every 3rd Column";
+            if(windP > 1.5 || H > 2400) {
+                hReinf = "Every Course";
+                vReinf = "Every 2nd Column";
+            }
+
+            // Update UI
+            document.getElementById('degVal').innerText = SWING_DEG + "°";
+            document.getElementById('outArea').innerText = areaM2.toFixed(2) + " m²";
+            document.getElementById('outMass').innerText = totalMass + " kg";
+            document.getElementById('outTopLoad').innerText = topBearingLat + " kN";
+            document.getElementById('outSteel').innerHTML = `${steelText}<br><span style='color:#d35400'>${bottomRailText}</span>`;
+
+            // Dynamic Hardware Links
+            let topPivotName, topPivotLink, floorSpringName, floorSpringLink;
+            const linkSilicone = "https://www.dow.com/en-us/pdp.dowsil-995-silicone-structural-sealant.01595759z.html";
+            
+            if(HW_BRAND === 'dorma') {
+                topPivotName = "Dorma 8062 Heavy-Duty";
+                topPivotLink = "https://www.dormakaba.com/us-en/products-solutions/products/door-hardware/pivots/8062-top-pivot-25562";
+                floorSpringName = "Dorma BTS 80";
+                floorSpringLink = "https://www.dormakaba.com/us-en/products-solutions/products/door-hardware/floor-springs/bts-80--25156";
+            } else {
+                topPivotName = "Rixson Model 340";
+                topPivotLink = "https://www.assaabloy.com/us/en/solutions/products/pivots-and-pivot-sets/center-hung-pivots/340-top-pivot";
+                floorSpringName = "Rixson Model 28 (or 27)";
+                floorSpringLink = "https://www.assaabloy.com/us/en/solutions/products/floor-closers/heavy-duty/model-28-center-hung";
+            }
+
+            const specHTML = `
+            <table class="spec-table">
+                <tr><th>Component</th><th>Spec & Link</th></tr>
+                <tr><td><strong>Bottom Rail</strong></td><td style="color:#d35400"><strong>${bottomRailText}</strong><br>+ Angle Beads for Glass</td></tr>
+                <tr><td><strong>Top/Side Frame</strong></td><td>${steelText}</td></tr>
+                <tr><td><strong>Pivot Mounting</strong></td><td style="color:red">12mm Welded Backing Plate<br>(Required at Pivot Pt)</td></tr>
+                <tr><td><strong>T/B Seals</strong></td><td>Nylon Brush Strip</td></tr>
+                <tr><td><strong>Side Seals</strong></td><td>Silicone Compression</td></tr>
+                <tr><td><strong>Top Bearing</strong></td><td>${topPivotName}<br><a href="${topPivotLink}" target="_blank" class="spec-link">CAD/Template Link ↗</a></td></tr>
+                <tr><td><strong>Floor Spring</strong></td><td>${floorSpringName}<br><a href="${floorSpringLink}" target="_blank" class="spec-link">Product Page ↗</a></td></tr>
+                <tr><td><strong>Sealant</strong></td><td>Dow 995 Structural<br><a href="${linkSilicone}" target="_blank" class="spec-link">Data Sheet ↗</a></td></tr>
+                <tr><td><strong>Reinf</strong></td><td>H: ${hReinf} | V: ${vReinf}</td></tr>
+            </table>`;
+            document.getElementById('specContainer').innerHTML = specHTML;
+
+
+            // --- SVG HELPERS ---
+            function createEl(type, attrs) {
+                const el = document.createElementNS("http://www.w3.org/2000/svg", type);
+                for (const k in attrs) el.setAttribute(k, attrs[k]);
+                return el;
+            }
+            
+            function createBlockPath(x, y, angleRad, w, d, color) {
+                const g = createEl('g', {
+                    transform: `translate(${x},${y}) rotate(${(angleRad * 180 / Math.PI) + 90})`
+                });
+                g.appendChild(createEl('rect', {
+                    x: -w/2, y: -d/2, width: w, height: d,
+                    fill: 'white', stroke: color, 'stroke-width': 1
+                }));
+                g.appendChild(createEl('line', { x1: -w/2-2, y1: 0, x2: -w/2, y2: 0, stroke:'#eee', 'stroke-width':1}));
+                g.appendChild(createEl('line', { x1: w/2, y1: 0, x2: w/2+2, y2: 0, stroke:'#eee', 'stroke-width':1}));
+                return g;
+            }
+
+            function createCallout(svg, x, y, text, direction="right") {
+                const g = createEl('g', {});
+                let lx = x, ly = y, tx, ty;
+                const leadLen = 40;
+                if(direction === "right") {
+                     tx = x + leadLen + 10; ty = y - 20;
+                     g.appendChild(createEl('polyline', { points: `${x},${y} ${x+leadLen},${y-20} ${x+leadLen+100},${y-20}`, class: 'svg-leader' }));
+                     g.appendChild(createEl('text', { x: tx, y: ty - 5, class: 'svg-label' })).textContent = text;
+                } else {
+                     tx = x - leadLen - 100; ty = y - 20;
+                     g.appendChild(createEl('polyline', { points: `${x},${y} ${x-leadLen},${y-20} ${x-leadLen-100},${y-20}`, class: 'svg-leader' }));
+                     g.appendChild(createEl('text', { x: x - leadLen - 10, y: ty - 5, class: 'svg-label', 'text-anchor':'end' })).textContent = text;
+                }
+                svg.appendChild(g);
+            }
+
+            // --- PLAN SVG LOGIC ---
+            const svgPlan = document.getElementById('planSvg');
+            while (svgPlan.lastChild) { svgPlan.removeChild(svgPlan.lastChild); }
+            
+            const cx = 400, cy = 300; 
+            const scale = 500 / (W + 600); 
+            
+            const cx_rel = (L2 - L1)/2 * scale;
+            const cy_rel = (R - sagitta) * scale;
+            
+            const vecLx = (-L1 * scale) - cx_rel;
+            const vecLy = -cy_rel;
+            const vecRx = (L2 * scale) - cx_rel;
+            const vecRy = -cy_rel;
+            
+            const startAngleDoor = Math.atan2(vecLy, vecLx);
+            const endAngleDoor = Math.atan2(vecRy, vecRx);
+            
+            const bW_sc = bW * scale;
+            const bD_sc = bD * scale;
+            const grout_sc = 10 * scale;
+            const anglePerBlock = (bW_sc + grout_sc) / (R * scale);
+            
+            const wallsGroup = createEl('g', { transform: `translate(${cx + cx_rel}, ${cy + cy_rel})` });
+            const gapAngle = (20 * scale) / (R*scale); 
+            
+            for(let i=1; i<=3; i++) {
+                let ang = startAngleDoor - gapAngle - (i * anglePerBlock) + (anglePerBlock/2);
+                let bx = (R*scale) * Math.cos(ang);
+                let by = (R*scale) * Math.sin(ang);
+                wallsGroup.appendChild(createBlockPath(bx, by, ang, bW_sc, bD_sc, '#2c3e50'));
+            }
+            for(let i=1; i<=3; i++) {
+                let ang = endAngleDoor + gapAngle + (i * anglePerBlock) - (anglePerBlock/2);
+                let bx = (R*scale) * Math.cos(ang);
+                let by = (R*scale) * Math.sin(ang);
+                wallsGroup.appendChild(createBlockPath(bx, by, ang, bW_sc, bD_sc, '#2c3e50'));
+            }
+            svgPlan.appendChild(wallsGroup);
+
+            const doorGroup = createEl('g', { transform: `translate(${cx}, ${cy}) rotate(${SWING_DEG})` });
+            const doorContents = createEl('g', { transform: `translate(${cx_rel}, ${cy_rel})` });
+            
+            const doorSweep = endAngleDoor - startAngleDoor;
+            const sweepAbs = Math.abs(doorSweep); 
+            
+            const numDoorBlocks = Math.floor(sweepAbs / anglePerBlock);
+            const totalBlockSpan = numDoorBlocks * anglePerBlock;
+            const startBlockAngle = startAngleDoor + (sweepAbs - totalBlockSpan)/2 + (anglePerBlock/2);
+            
+            for(let i=0; i<numDoorBlocks; i++) {
+                let ang = startBlockAngle + (i * anglePerBlock);
+                let bx = (R*scale) * Math.cos(ang);
+                let by = (R*scale) * Math.sin(ang);
+                doorContents.appendChild(createBlockPath(bx, by, ang, bW_sc, bD_sc, '#e1f5fe'));
+            }
+            
+            const x1 = (R*scale) * Math.cos(startAngleDoor);
+            const y1 = (R*scale) * Math.sin(startAngleDoor);
+            const x2 = (R*scale) * Math.cos(endAngleDoor);
+            const y2 = (R*scale) * Math.sin(endAngleDoor);
+            
+            doorContents.appendChild(createEl('path', {
+                d: `M ${x1} ${y1} A ${R*scale} ${R*scale} 0 0 1 ${x2} ${y2}`,
+                fill: 'none', stroke: '#95a5a6', 'stroke-width': bD_sc + 8
+            }));
+            
+            doorGroup.appendChild(doorContents);
+            svgPlan.appendChild(doorGroup);
+            svgPlan.appendChild(createEl('circle', { cx: cx, cy: cy, r: 5, fill: '#d35400' }));
+            
+            createCallout(svgPlan, cx, cy, "Offset Pivot", "left");
+            createCallout(svgPlan, cx + (L2*scale), cy - 20, "Side Compression Seal", "right");
+
+
+            // --- ELEVATION SVG (With Deep Bottom Rail) ---
+            const svgElev = document.getElementById('elevSvg');
+            while (svgElev.lastChild) { svgElev.removeChild(svgElev.lastChild); }
+
+            const scaleE = 450 / H; 
+            const drawW = W * scaleE; 
+            const drawH = H * scaleE;
+            const ex = (600 - drawW) / 2;
+            const ey = 80;
+
+            const frameThick = 6 * scaleE; 
+            const bottomRailHeight = 100 * scaleE; 
+
+            // Main Frame
+            svgElev.appendChild(createEl('rect', { x: ex, y: ey, width: drawW, height: drawH, class: 'svg-steel', 'stroke-width': 1 }));
+            
+            // Deep Bottom Rail
+            svgElev.appendChild(createEl('rect', { 
+                x: ex, y: ey + drawH - bottomRailHeight, 
+                width: drawW, height: bottomRailHeight, 
+                fill: '#7f8c8d', stroke: '#2c3e50', 'stroke-width': 1 
+            }));
+            
+            // Pivot Line
+            const pivotX = ex + (L1 * scaleE);
+            svgElev.appendChild(createEl('line', { x1: pivotX, y1: ey, x2: pivotX, y2: ey+drawH, stroke: '#d35400', 'stroke-width': 2, 'stroke-dasharray': '5,5' }));
+
+            // --- REINFORCEMENT PLATE DETAIL ---
+            // Draw a thick darker rectangle inside the top frame at pivotX
+            const plateW = 100 * scaleE;
+            const plateH = 20 * scaleE; // Represent 12mm thickness + visual emphasis
+            svgElev.appendChild(createEl('rect', {
+                x: pivotX - plateW/2, y: ey, width: plateW, height: plateH,
+                fill: '#2c3e50', stroke: 'none'
+            }));
+
+            // Visualize the Hardware Block (Pivot receiver)
+            svgElev.appendChild(createEl('rect', {
+                x: pivotX - 25*scaleE, y: ey + 2, width: 50*scaleE, height: 40*scaleE,
+                fill: '#e67e22', stroke: 'black', 'stroke-width':1
+            }));
+
+            const gridG = createEl('g', { stroke: 'white', 'stroke-width': 1 });
+            const reinfG = createEl('g', {});
+            
+            const innerW = drawW - frameThick*2;
+            const innerH = drawH - frameThick - bottomRailHeight; 
+            const startGridX = ex + frameThick;
+            const startGridY = ey + frameThick;
+            
+            let hStep = 2; // Every 2nd
+            let vStep = 3; // Every 3rd
+            if(windP > 1.5 || H > 2400) { hStep = 1; vStep = 2; }
+
+            for(let i=1; i < cols; i++) {
+                let gx = startGridX + i*(innerW/cols);
+                gridG.appendChild(createEl('line', { x1: gx, y1: startGridY, x2: gx, y2: startGridY+innerH }));
+                if(i % vStep === 0) {
+                     reinfG.appendChild(createEl('line', { 
+                        x1: gx, y1: startGridY, x2: gx, y2: startGridY+innerH, 
+                        stroke: 'blue', 'stroke-width': 1.5, 'stroke-dasharray': '4,4', opacity: 0.6
+                    }));
+                }
+            }
+            for(let j=1; j < rows; j++) {
+                let gy = startGridY + j*(innerH/rows);
+                if(gy > startGridY + innerH) continue; 
+                gridG.appendChild(createEl('line', { x1: startGridX, y1: gy, x2: startGridX+innerW, y2: gy }));
+                if(j % hStep === 0) {
+                     reinfG.appendChild(createEl('line', { 
+                        x1: startGridX, y1: gy, x2: startGridX+innerW, y2: gy, 
+                        stroke: 'red', 'stroke-width': 1.5, 'stroke-dasharray': '4,4', opacity: 0.6
+                    }));
+                }
+            }
+            svgElev.appendChild(gridG);
+            svgElev.appendChild(reinfG);
+            
+            svgElev.appendChild(createEl('line', { x1: ex-50, y1: ey+drawH, x2: ex+drawW+50, y2: ey+drawH, stroke: '#333', 'stroke-width':2 }));
+            
+            createCallout(svgElev, pivotX, ey, "12mm Reinf. Plate (Welded)", "right");
+            createCallout(svgElev, ex, ey + drawH - bottomRailHeight/2, "100mm Box Section", "left");
+            createCallout(svgElev, ex + drawW, ey + drawH/2, "Side Seals", "right");
+        }
+
+        function downloadSVG(svgId, filename) {
+            const svg = document.getElementById(svgId);
+            const serializer = new XMLSerializer();
+            let source = serializer.serializeToString(svg);
+            if(!source.match(/^<\?xml/)) source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+            const url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+            const dl = document.createElement("a");
+            dl.href = url; dl.download = filename;
+            document.body.appendChild(dl); dl.click(); document.body.removeChild(dl);
+        }
+
+        update();
+    </script>
+</body>
+</html>

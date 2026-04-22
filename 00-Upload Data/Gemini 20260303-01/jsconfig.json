@@ -1,0 +1,15 @@
+// Root: jsconfig.json
+// Version: 1.1
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "/src/*": [ "./src/*" ]
+    },
+    "target": "ES6",
+    "module": "commonjs",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [ "src/**/*", "vite.config.js" ],
+  "exclude": [ "node_modules" ]
+}
