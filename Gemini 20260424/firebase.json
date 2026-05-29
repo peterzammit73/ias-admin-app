@@ -13,7 +13,6 @@
     }
   ],
   "hosting": {
-    "site": "ias-web-01-01-dev",
     "public": "dist",
     "ignore": [
       "firebase.json",
