@@ -1,5 +1,5 @@
 // Root: functions/billing.js
-// Version: 16.14 - Fixed Project Number Casting & Deep Ledger Mapping for Audits
+// Version: 16.15 - Fixed Item Breakdown & Time ID Mapping for RFPs
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { db } = require("./config");
@@ -123,10 +123,15 @@ exports.migrateLegacyIssuers = functions.https.onCall(async (data, context) => {
 exports.createRFP = functions.https.onCall(async (data, context) => {
     if (!context.auth) throw new functions.https.HttpsError("unauthenticated", "Auth required.");
 
-    const { projectNumber, recipient, description, amount, vatApplicable, vatAmount, items, costIds, writeOffCostIds, isIndependent, costManagementFees, hiddenCostIds } = data;
+    // EXPLICITLY CAPTURE BOTH items (breakdown) AND timeIds (linked timesheets)
+    const { 
+        projectNumber, recipient, description, recipientAddress, recipientVat, contactPerson,
+        items, timeIds, costIds, writeOffCostIds, isIndependent, costManagementFees, 
+        hiddenCostIds, feeVatApplicable 
+    } = data;
 
-    if (items && items.length > 0) {
-        const checkIds = items.slice(0, 10);
+    if (timeIds && timeIds.length > 0) {
+        const checkIds = timeIds.slice(0, 10);
         const checkSnaps = await Promise.all(checkIds.map(id => db.collection('timesheet_entries').doc(id).get()));
 
         for (const snap of checkSnaps) {
@@ -139,15 +144,26 @@ exports.createRFP = functions.https.onCall(async (data, context) => {
         }
     }
 
-    const subTotal = parseFloat(amount) || 0;
-    let finalVatAmount = 0;
-    if (vatAmount !== undefined && vatAmount !== null) {
-        finalVatAmount = parseFloat(vatAmount);
-    } else {
-        finalVatAmount = vatApplicable ? subTotal * 0.18 : 0;
-    }
-    finalVatAmount = roundUp(finalVatAmount);
-    const totalAmount = roundUp(subTotal + finalVatAmount);
+    // --- BACKEND CALCULATION ENGINE ---
+    let calcNet = 0;
+    let calcVat = 0;
+
+    const finalItems = (items || []).map(item => {
+        const net = parseFloat(item.net) || 0;
+        const vatRate = parseFloat(item.vatRate) || 0; 
+        const vat = roundUp(net * vatRate);
+        calcNet += net;
+        calcVat += vat;
+        return {
+            description: item.description || '',
+            net: net,
+            vatRate: vatRate,
+            vat: vat,
+            total: roundUp(net + vat)
+        };
+    });
+
+    const finalTotalAmount = roundUp(calcNet + calcVat);
 
     const rfpRef = db.collection('rfps').doc();
     const batch = db.batch();
@@ -156,25 +172,29 @@ exports.createRFP = functions.https.onCall(async (data, context) => {
         projectNumber: String(projectNumber),
         projectName: description,
         recipient,
-        amount: subTotal,
-        vatApplicable: vatApplicable !== false,
-        vatAmount: finalVatAmount,
-        totalAmount: totalAmount,
-        outstandingBalance: totalAmount,
+        recipientAddress: recipientAddress || '',
+        recipientVat: recipientVat || '',
+        contactPerson: contactPerson || null,
+        amount: roundUp(calcNet),
+        vatAmount: roundUp(calcVat),
+        totalAmount: finalTotalAmount,
+        outstandingBalance: finalTotalAmount,
+        vatApplicable: calcVat > 0,
         description,
         status: 'Pending',
         createdAt: admin.firestore.Timestamp.now(),
         invoicedAmount: 0,
         creditedAmount: 0,
         isManual: !!isIndependent,
-        linkedTimeIds: items || [],
+        linkedTimeIds: timeIds || [], 
         linkedCostIds: costIds || [],
-        linkedManagementFees: costManagementFees || {}
+        linkedManagementFees: costManagementFees || {},
+        items: finalItems 
     };
 
     batch.set(rfpRef, rfpData);
 
-    if (items) items.forEach(id => batch.update(db.collection('timesheet_entries').doc(id), { billingStatus: 'rfp_pending', rfpId: rfpRef.id }));
+    if (timeIds) timeIds.forEach(id => batch.update(db.collection('timesheet_entries').doc(id), { billingStatus: 'rfp_pending', rfpId: rfpRef.id }));
 
     if (costIds) {
         costIds.forEach(id => {
@@ -195,7 +215,7 @@ exports.createRFP = functions.https.onCall(async (data, context) => {
         }));
     }
 
-    await logActivity(context, 'RFP_CREATED', projectNumber, `Draft RFP created for €${subTotal.toLocaleString()} + VAT €${finalVatAmount.toLocaleString()}.`);
+    await logActivity(context, 'RFP_CREATED', projectNumber, `Draft RFP created for €${roundUp(calcNet).toLocaleString()} + VAT €${roundUp(calcVat).toLocaleString()}.`);
     await batch.commit();
 
     // Mark base project as dirty just in case it's a sub-project (0999-0001)
@@ -455,7 +475,7 @@ exports.cancelRFP = functions.https.onCall(async (data, context) => {
 exports.reviseRFP = functions.https.onCall(async (data, context) => {
     if (!context.auth) throw new functions.https.HttpsError("unauthenticated", "Auth required.");
 
-    const { rfpId, amount, description, projectName, recipient, recipientAddress, recipientVat, vatApplicable, vatAmount, feeVatApplicable, contactPerson } = data;
+    const { rfpId, description, projectName, recipient, recipientAddress, recipientVat, contactPerson, items } = data;
     const oldRfpRef = db.collection('rfps').doc(rfpId);
     const newRfpRef = db.collection('rfps').doc();
 
@@ -469,30 +489,45 @@ exports.reviseRFP = functions.https.onCall(async (data, context) => {
             const version = match ? parseInt(match[1]) + 1 : 1;
             const baseCode = currentCode.split('-R')[0];
             const newCode = `${baseCode}-R${version}`;
-            const subTotal = parseFloat(amount);
-            const isVatApplicable = (vatApplicable !== undefined) ? vatApplicable : oldData.vatApplicable;
-            let finalVat = 0;
-            if (vatAmount !== undefined && vatAmount !== null) {
-                finalVat = parseFloat(vatAmount);
-            } else {
-                finalVat = isVatApplicable ? subTotal * 0.18 : 0;
-            }
-            finalVat = roundUp(finalVat);
-            const totalAmount = roundUp(subTotal + finalVat);
+
+            // --- BACKEND CALCULATION ENGINE ---
+            let calcNet = 0;
+            let calcVat = 0;
+
+            const finalItems = (items || []).map(item => {
+                const net = parseFloat(item.net) || 0;
+                const vatRate = parseFloat(item.vatRate) || 0;
+                const vat = roundUp(net * vatRate);
+                calcNet += net;
+                calcVat += vat;
+                return {
+                    description: item.description || '',
+                    net: net,
+                    vatRate: vatRate,
+                    vat: vat,
+                    total: roundUp(net + vat)
+                };
+            });
+
+            const finalTotalAmount = roundUp(calcNet + calcVat);
 
             transaction.update(oldRfpRef, { status: 'Superseded', supersededBy: newRfpRef.id, supersededAt: admin.firestore.Timestamp.now() });
 
             transaction.set(newRfpRef, {
                 ...oldData,
-                rfpCode: newCode, rfpNumber: newCode, amount: subTotal, vatApplicable: isVatApplicable, vatAmount: finalVat, totalAmount: totalAmount,
-                outstandingBalance: totalAmount,
+                rfpCode: newCode, rfpNumber: newCode, 
+                amount: roundUp(calcNet), 
+                vatAmount: roundUp(calcVat), 
+                totalAmount: finalTotalAmount,
+                outstandingBalance: finalTotalAmount,
+                vatApplicable: calcVat > 0,
                 description: (description !== undefined) ? description : oldData.description,
                 projectName: (projectName !== undefined) ? projectName : oldData.projectName,
                 recipient: (recipient !== undefined) ? recipient : oldData.recipient,
                 recipientAddress: (recipientAddress !== undefined) ? recipientAddress : oldData.recipientAddress,
                 recipientVat: (recipientVat !== undefined) ? recipientVat : oldData.recipientVat,
-                feeVatApplicable: (feeVatApplicable !== undefined) ? feeVatApplicable : oldData.feeVatApplicable,
                 contactPerson: (contactPerson !== undefined) ? contactPerson : (oldData.contactPerson || null),
+                items: finalItems.length > 0 ? finalItems : (oldData.items || []), 
                 status: 'Issued - Open',
                 createdAt: admin.firestore.Timestamp.now(), issuedAt: admin.firestore.Timestamp.now(),
                 invoicedAmount: 0, creditedAmount: 0,

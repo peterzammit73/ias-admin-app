@@ -1,5 +1,5 @@
 // Root: src/modules/billing/DocumentTemplate.jsx
-// Version: 3.7 - Fixed Import Path & Bank Account Holder reference in the footer
+// Version: 3.10 - Fixed Legacy Array of Strings Collision
 import React, { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '/src/firebase.js';
@@ -92,12 +92,18 @@ const DocumentTemplate = ({ data, type, subData }) => {
     let displayAmount = parseFloat(data.amount || 0);
     let displayVat = 0;
 
-    if (data.vatApplicable) {
-        if (data.vatAmount !== undefined && data.vatAmount !== null) {
-            displayVat = parseFloat(data.vatAmount);
-        } else {
-            displayVat = displayAmount * 0.18;
-        }
+    // Strict VAT resolution: Ensure items array contains objects, not legacy strings
+    const hasValidItemBreakdown = data.items && data.items.length > 0 && typeof data.items[0] === 'object' && data.items[0] !== null && 'net' in data.items[0];
+
+    if (hasValidItemBreakdown) {
+        displayAmount = data.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+        displayVat = data.items.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
+    } else if (data.totalAmount !== undefined && data.totalAmount !== null && Math.abs(parseFloat(data.totalAmount) - displayAmount) < 0.01) {
+        displayVat = 0;
+    } else if (data.vatAmount !== undefined && data.vatAmount !== null) {
+        displayVat = parseFloat(data.vatAmount);
+    } else if (data.vatApplicable) {
+        displayVat = displayAmount * 0.18;
     }
 
     let displayTotal = displayAmount + displayVat;
@@ -113,15 +119,47 @@ const DocumentTemplate = ({ data, type, subData }) => {
     const credAmt = parseFloat(data.creditedAmount || 0);
     const outstandingBalance = data.remaining !== undefined ? data.remaining : Math.max(0, totalAmt - invAmt - credAmt);
 
+    // SMARTER VAT ALLOCATION FOR DERIVED DOCUMENTS
+    const calculateBlendedAmounts = (totalInput) => {
+        let rfpTotalGross = parseFloat(data.totalAmount || 0);
+        let rfpTotalNet = parseFloat(data.amount || 0);
+        let rfpTotalVat = parseFloat(data.vatAmount || 0);
+        
+        if (hasValidItemBreakdown) {
+            rfpTotalNet = data.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+            rfpTotalVat = data.items.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
+            rfpTotalGross = rfpTotalNet + rfpTotalVat;
+        }
+
+        let calcAmount = 0;
+        let calcVat = 0;
+
+        // Trust exact ratios if the gross is > 0
+        if (rfpTotalGross > 0) {
+            const vatRatio = rfpTotalVat / rfpTotalGross;
+            const netRatio = rfpTotalNet / rfpTotalGross;
+            calcVat = totalInput * vatRatio;
+            calcAmount = totalInput * netRatio;
+        } else if (data.vatApplicable && data.vatAmount !== 0) { // Strict override
+            calcAmount = totalInput / 1.18;
+            calcVat = totalInput - calcAmount;
+        } else {
+            calcAmount = totalInput;
+            calcVat = 0;
+        }
+        return { displayAmount: calcAmount, displayVat: calcVat };
+    };
+
     if (type === 'PARTIAL' && subData) {
         const amountPaid = parseFloat(subData.amount) || 0;
         displayTotal = amountPaid;
-        if (data.vatApplicable) { displayAmount = displayTotal / 1.18; displayVat = displayTotal - displayAmount; }
-        else { displayAmount = displayTotal; displayVat = 0; }
+        
+        const blended = calculateBlendedAmounts(displayTotal);
+        displayAmount = blended.displayAmount;
+        displayVat = blended.displayVat;
 
         let isFinal = subData.type === 'Final Balance';
 
-        // Auto-detect if this is the final payment (if outstanding balance is 0 and this is the latest payment)
         if (!isFinal && outstandingBalance <= 0.01 && data.payments) {
             let latestPaymentKey = null;
             let maxDate = 0;
@@ -141,23 +179,28 @@ const DocumentTemplate = ({ data, type, subData }) => {
 
         description = isFinal ? `Final Settlement for RFP number ${getDocIdentifier()}` : `Partial Payment for RFP number ${getDocIdentifier()}`;
 
-        // Dynamically update title on the header as well
         if (isFinal) currentConfig.title = "Tax Invoice (Final)";
     }
 
     if (type === 'CREDIT_NOTE' && subData) {
         const amountCredited = parseFloat(subData.amount) || 0;
         displayTotal = amountCredited;
-        if (data.vatApplicable) { displayAmount = displayTotal / 1.18; displayVat = displayTotal - displayAmount; }
-        else { displayAmount = displayTotal; displayVat = 0; }
+        
+        const blended = calculateBlendedAmounts(displayTotal);
+        displayAmount = blended.displayAmount;
+        displayVat = blended.displayVat;
+
         description = `Reversal / Credit for RFP number ${getDocIdentifier()}`;
     }
 
     if (type === 'REMINDER' && subData) {
         const outstanding = parseFloat(subData.amount) || 0;
         displayTotal = outstanding;
-        if (data.vatApplicable) { displayAmount = displayTotal / 1.18; displayVat = displayTotal - displayAmount; }
-        else { displayAmount = displayTotal; displayVat = 0; }
+
+        const blended = calculateBlendedAmounts(displayTotal);
+        displayAmount = blended.displayAmount;
+        displayVat = blended.displayVat;
+
         description = `Outstanding Balance for RFP number ${getDocIdentifier()}`;
     }
 
@@ -173,37 +216,25 @@ const DocumentTemplate = ({ data, type, subData }) => {
     const issuerName = data.issuerDetails?.displayName || data.issuerDetails?.name || data.issuer || companyInfo.name;
     const issuerAddress = data.issuerDetails?.address || companyInfo.address;
     const issuerVat = data.issuerDetails?.vatNumber || companyInfo.vat;
-
-    // Specifically for the Bank Account Holder name in footer - Prioritize explicit 'accountHolder' field
     const bankAccountHolder = data.issuerDetails?.accountHolder || data.issuerDetails?.displayName || data.issuerDetails?.name || issuerName;
 
     const recipientName = data.recipient || 'Valued Client';
     const recipientAddr = data.recipientAddress || '';
     const recipientVatNo = data.recipientVat || '';
 
-    // Explicitly check contactPerson on root data object and clean it
     let contactPerson = data.contactPerson;
-
-    // Cleaning Logic: Remove trailing commas or extra spaces if present
     if (contactPerson) {
         contactPerson = contactPerson.trim();
-        if (contactPerson.endsWith(',')) {
-            contactPerson = contactPerson.slice(0, -1).trim();
-        }
-        // If it becomes empty after trim, treat as null
+        if (contactPerson.endsWith(',')) contactPerson = contactPerson.slice(0, -1).trim();
         if (contactPerson.length === 0) contactPerson = null;
     }
 
     const isSuperseded = data.status === 'Superseded';
-
     const projectName = data.projectName || '';
     const normalize = (str) => str ? str.toLowerCase().replace(/\s+/g, ' ').trim() : '';
     const normProjectName = normalize(projectName);
     const normDescription = normalize(description);
-
-    const showProjectName = projectName &&
-        normProjectName.length > 3 &&
-        !normDescription.includes(normProjectName);
+    const showProjectName = projectName && normProjectName.length > 3 && !normDescription.includes(normProjectName);
 
     return (
         <div id="doc-print-area" className="relative">
@@ -249,7 +280,7 @@ const DocumentTemplate = ({ data, type, subData }) => {
                     .watermark-text {
                         font-size: 8rem;
                         font-weight: bold;
-                        color: rgba(156, 163, 175, 0.5); /* gray-400 with 50% opacity */
+                        color: rgba(156, 163, 175, 0.5);
                         transform: rotate(-45deg);
                         text-transform: uppercase;
                         white-space: nowrap;
@@ -280,21 +311,21 @@ const DocumentTemplate = ({ data, type, subData }) => {
                 .watermark-text {
                     font-size: 8rem;
                     font-weight: bold;
-                    color: rgba(156, 163, 175, 0.5); /* gray-400 with 50% opacity */
+                    color: rgba(156, 163, 175, 0.5);
                     transform: rotate(-45deg);
                     text-transform: uppercase;
                     white-space: nowrap;
                 }
                 .stamp-container {
                     position: absolute;
-                    bottom: 25mm; /* Adjusted to be clearly above footer line */
+                    bottom: 25mm; 
                     right: 20mm;
-                    border: 3px solid #ea580c; /* Orange-600 */
+                    border: 3px solid #ea580c; 
                     padding: 12px;
                     text-align: center;
-                    color: #ea580c; /* Orange-600 */
+                    color: #ea580c; 
                     opacity: 0.5;
-                    width: 180px; /* Made narrower (was 240px) */
+                    width: 180px; 
                     background-color: rgba(255, 255, 255, 0.7);
                     border-radius: 4px;
                     z-index: 100;
@@ -313,7 +344,7 @@ const DocumentTemplate = ({ data, type, subData }) => {
                 }
                 .stamp-sign-line {
                     border-bottom: 2px solid #ea580c;
-                    margin: 35px 15px 5px 15px; /* Space for signature */
+                    margin: 35px 15px 5px 15px; 
                     height: 1px;
                 }
                 .stamp-footer {
@@ -372,10 +403,7 @@ const DocumentTemplate = ({ data, type, subData }) => {
                         <div className="text-sm font-medium leading-tight">
                             <p className="font-bold text-base mb-1">{recipientName}</p>
                             {recipientAddr && <div className="whitespace-pre-line text-xs">{recipientAddr}</div>}
-
                             {recipientVatNo && <p className="mt-1 text-xs">VAT: {recipientVatNo}</p>}
-
-                            {/* Contact Person Line */}
                             {contactPerson && (
                                 <p className="mt-1 text-xs">For the attn. of - {contactPerson}</p>
                             )}
@@ -383,18 +411,16 @@ const DocumentTemplate = ({ data, type, subData }) => {
                     </div>
                 </div>
 
-                {/* Main Content: Enforced Full Width */}
                 <div className="flex-1 relative z-10 w-full">
                     <div className="mb-6 text-black w-full">
                         <h3 className="text-[10px] font-bold uppercase tracking-wider mb-2 border-b border-gray-400 pb-1 w-full">Description</h3>
-                        {/* CONDITIONAL PROJECT NAME */}
                         {showProjectName && <p className="font-bold text-base w-full mb-1">{projectName}</p>}
                         <p className="mt-1 whitespace-pre-wrap text-sm w-full block font-normal">{description}</p>
                     </div>
 
                     <div className="mb-6 w-full">
-                        {/* CHANGED: Logic to always use the 4-column layout for RFPs */}
-                        {(data.items && data.items.length > 0) || type === 'RFP' ? (
+                        {/* Render 4-Column Layout Only for full RFPs and full Invoices */}
+                        {(type === 'RFP' || type === 'INVOICE') ? (
                             <table className="w-full text-left border-collapse text-black text-sm">
                                 <thead>
                                     <tr className="border-b-2 border-black">
@@ -405,7 +431,7 @@ const DocumentTemplate = ({ data, type, subData }) => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {data.items && data.items.length > 0 ? (
+                                    {hasValidItemBreakdown ? (
                                         data.items.map((item, idx) => (
                                             <tr key={idx} className="border-b border-gray-300">
                                                 <td className="py-3 pr-4 font-normal">{item.description}</td>
@@ -415,7 +441,6 @@ const DocumentTemplate = ({ data, type, subData }) => {
                                             </tr>
                                         ))
                                     ) : (
-                                        // Fallback row for manual RFPs without items array
                                         <tr className="border-b border-gray-300">
                                             <td className="py-3 pr-4 font-normal">Professional Services</td>
                                             <td className="py-3 text-right font-medium">{formatCurrency(displayAmount)}</td>
@@ -426,7 +451,7 @@ const DocumentTemplate = ({ data, type, subData }) => {
                                 </tbody>
                             </table>
                         ) : (
-                            // Fallback 2-column layout for Non-RFP types (if items are missing)
+                            // Render simplified 2-Column layout for Payments and Credit Notes
                             <table className="w-full text-left border-collapse text-black text-sm">
                                 <thead>
                                     <tr className="border-b-2 border-black">
@@ -481,7 +506,6 @@ const DocumentTemplate = ({ data, type, subData }) => {
                     </div>
                 </div>
 
-                {/* Footer */}
                 <div className="text-xs text-black border-t-2 border-black pt-4 mt-auto relative z-10 w-full">
                     {(type === 'RFP' || type === 'REMINDER' || type === 'INVOICE') && (
                         <div className="mb-4">

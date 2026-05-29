@@ -1,5 +1,5 @@
 // Root: functions/timesheets.js
-// Version: 15.8 - Fixed Date Serialization for Monthly Report Weeks
+// Version: 15.9 - Unmasked Google Calendar API Errors
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { db, getAuthorizedClient, google } = require("./config");
@@ -109,7 +109,7 @@ exports.validateTimesheets = functions.runWith({
                 const calendar = google.calendar({ version: "v3", auth: authClient });
                 const res = await calendar.events.list({ calendarId: 'primary', timeMin: new Date(startDate + "T00:00:00Z").toISOString(), timeMax: new Date(endDate + "T23:59:59.999Z").toISOString(), singleEvents: true, orderBy: "startTime" });
                 calEvents = res.data.items || [];
-            } catch (e) { console.warn(`Calendar fetch failed for: ${email}`); }
+            } catch (e) { console.error(`Calendar fetch error for ${email}:`, e); }
             const newEntries = [], incorrectEntries = [];
             const stdRegex = /^(\d{4})-(\w\/\w{4})(-.*)?$/;
             const miscRegex = /^0999-([A-Z0-9]+\/[A-Z0-9]+)-([A-Z0-9]+)(?:-(.*))?$/i;

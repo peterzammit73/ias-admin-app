@@ -1,12 +1,12 @@
 // Root: src/modules/billing/UpdateRFPModal.jsx
-// Version: 6.3 - Fixed Imports & Enhanced Legacy RFP Client Data Fallback
+// Version: 6.5 - Save Breakdown Items to Database AND Honor VAT Unchecks
 import React, { useState, useEffect, useMemo } from 'react';
 import { getApp } from 'firebase/app';
 import { getFirestore, doc, updateDoc, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { ExclamationTriangleIcon, BuildingOfficeIcon, UserIcon, UserCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
-// Safely initialize Firebase instances (Bypasses local import resolution issues in preview)
+// Safely initialize Firebase instances
 let db, functionsInstance;
 try {
     const app = getApp();
@@ -16,7 +16,6 @@ try {
     console.warn("Firebase app not initialized in this environment.");
 }
 
-// Inline Modal component to prevent resolution errors in isolated preview
 const Modal = ({ show, onClose, title, children, maxWidth = 'sm:max-w-lg' }) => {
     if (!show) return null;
     return (
@@ -35,7 +34,6 @@ const Modal = ({ show, onClose, title, children, maxWidth = 'sm:max-w-lg' }) => 
 };
 
 const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
-    // Helper: Round UP to 2 decimal places (Ceiling)
     const roundUp = (num) => Math.ceil(num * 100) / 100;
 
     const [formData, setFormData] = useState({
@@ -45,32 +43,19 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
         recipientVat: ''
     });
 
-    // Recipient Type State
-    const [recipientType, setRecipientType] = useState('company'); // 'company' or 'individual'
-
-    // Selected Contact Person Display
+    const [recipientType, setRecipientType] = useState('company'); 
     const [contactPerson, setContactPerson] = useState('');
-
-    // Financial State
-    const [rfpFee, setRfpFee] = useState(0); // The "Fee" portion only
+    const [rfpFee, setRfpFee] = useState(0); 
     const [rfpFeeVat, setRfpFeeVat] = useState(true);
-
-    // Itemized Data
     const [costItems, setCostItems] = useState([]);
     const [itemsLoading, setItemsLoading] = useState(false);
-
-    // UI State
     const [loading, setLoading] = useState(false);
     const [projectTitle, setProjectTitle] = useState('');
     const [clients, setClients] = useState([]);
-
     const [includeSupersedeText, setIncludeSupersedeText] = useState(true);
-
-    // Validation State
     const [missingDataWarning, setMissingDataWarning] = useState('');
 
     const isRevision = mode === 'revise';
-
     const getClientName = (c) => c.companyName || `${c.name} ${c.surname}`;
 
     useEffect(() => {
@@ -83,7 +68,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                 setIncludeSupersedeText(true);
             }
 
-            // 1. Initial attempt to load from RFP object directly
             const initialRecipient = rfp.recipient || '';
             const initialAddress = rfp.recipientAddress || '';
             const initialVat = rfp.recipientVat || '';
@@ -102,7 +86,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
 
             const fetchDetails = async () => {
                 try {
-                    // 1. Project Details (Strict Fetch)
                     let pTitle = '';
                     const variations = [
                         String(rfp.projectNumber),
@@ -122,15 +105,13 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                         const pData = snap.docs[0].data();
                         pTitle = pData.projectDescription || '';
                         setProjectTitle(pTitle);
-                        linkedClientNumber = pData.clientNumber; // Needed for fallback
+                        linkedClientNumber = pData.clientNumber; 
                     }
 
-                    // 2. Clients
                     const clientSnap = await getDocs(query(collection(db, 'clients')));
                     const clientList = clientSnap.docs.map(d => d.data());
                     setClients(clientList);
 
-                    // 3. ROBUST FALLBACK LOGIC
                     let finalRecipient = initialRecipient;
                     let finalAddress = initialAddress;
                     let finalVat = initialVat;
@@ -139,53 +120,32 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
 
                     let matchedClient = null;
 
-                    // A. Try to match by the recipient string on the RFP
                     if (finalRecipient) {
                         matchedClient = clientList.find(c => getClientName(c).toLowerCase() === finalRecipient.toLowerCase().trim());
                     }
 
-                    // B. If no match by name, try to match by Project's Client Number (Legacy Support)
                     if (!matchedClient && linkedClientNumber) {
                         matchedClient = clientList.find(c => String(c.clientNumber) === String(linkedClientNumber));
                     }
 
                     if (matchedClient) {
                         rType = matchedClient.type || (matchedClient.companyName ? 'company' : 'individual');
-
-                        // Auto-fill missing pieces from matched client
                         if (!finalRecipient) finalRecipient = getClientName(matchedClient);
-
-                        if (!finalAddress) {
-                            finalAddress = [matchedClient.address, matchedClient.locality, matchedClient.postCode, matchedClient.country].filter(Boolean).join(',\n');
-                        }
-
-                        if (!finalVat) {
-                            finalVat = matchedClient.vatNumber || '';
-                        }
-
+                        if (!finalAddress) finalAddress = [matchedClient.address, matchedClient.locality, matchedClient.postCode, matchedClient.country].filter(Boolean).join(',\n');
+                        if (!finalVat) finalVat = matchedClient.vatNumber || '';
                         if (rType === 'company' && !finalContact && matchedClient.name && matchedClient.surname) {
                             finalContact = `${matchedClient.name} ${matchedClient.surname}`;
                         }
                     }
 
-                    // Update State with Fallbacks
                     setRecipientType(rType);
                     setContactPerson(finalContact);
+                    setFormData(prev => ({ ...prev, recipient: finalRecipient, recipientAddress: finalAddress, recipientVat: finalVat }));
 
-                    setFormData(prev => ({
-                        ...prev,
-                        recipient: finalRecipient,
-                        recipientAddress: finalAddress,
-                        recipientVat: finalVat
-                    }));
-
-                    // C. FINAL VALIDATION CHECK
-                    // If we STILL don't have an address or recipient after all fallbacks, warn the user
                     if (!finalRecipient || !finalAddress) {
                         setMissingDataWarning("WARNING: Recipient Name and/or Address are missing. This was likely a legacy RFP. Please select the client manually from the dropdown or fill in the details below before saving.");
                     }
 
-                    // 4. Fetch Linked Costs
                     setItemsLoading(true);
                     const cItems = [];
 
@@ -203,7 +163,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                     }
                     setCostItems(cItems);
 
-                    // 5. Calculate Initial Fee Portion
                     const totalCosts = cItems.reduce((sum, c) => sum + parseFloat(c.amount || 0), 0);
                     const feeAmount = Math.max(0, (parseFloat(rfp.amount) || 0) - totalCosts);
                     setRfpFee(feeAmount);
@@ -218,7 +177,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
         }
     }, [rfp, isOpen, isRevision]);
 
-    // Live Financial Calculations (Rounded Up)
     const financials = useMemo(() => {
         const fees = parseFloat(rfpFee) || 0;
         const feesVat = rfpFeeVat ? roundUp(fees * 0.18) : 0;
@@ -241,7 +199,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
         return { totalNet, totalVat, totalGross };
     }, [rfpFee, rfpFeeVat, costItems]);
 
-    // Filter Clients based on selected Type
     const filteredClients = useMemo(() => {
         if (!clients) return [];
         return clients.filter(c => {
@@ -256,17 +213,12 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
         if (client) {
             const addr = [client.address, client.locality, client.postCode, client.country].filter(Boolean).join(',\n');
             setFormData(prev => ({ ...prev, recipient: selectedName, recipientAddress: addr, recipientVat: client.vatNumber || '' }));
-
-            // Set Contact Person if Company
             if (recipientType === 'company' && client.name && client.surname) {
                 setContactPerson(`${client.name} ${client.surname}`);
             } else {
                 setContactPerson('');
             }
-
-            // Clear warning if they selected a valid client
             if (addr) setMissingDataWarning('');
-
         } else {
             setFormData(prev => ({ ...prev, recipient: selectedName }));
             setContactPerson('');
@@ -276,8 +228,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-
-        // Clear warning if they start typing in the address manually
         if (name === 'recipientAddress' && value.trim()) {
             setMissingDataWarning('');
         }
@@ -295,7 +245,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
 
         setLoading(true);
         try {
-            // 1. Update individual Cost Items with their new VAT applicability
             if (costItems.length > 0) {
                 const batch = writeBatch(db);
                 costItems.forEach(item => {
@@ -310,19 +259,38 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                 finalDescription += `\n\nThis RFP supersedes RFP number ${rfp.rfpNumber}.`;
             }
 
-            // 2. Update RFP Document
+            // BUILD ITEMIZED ARRAY TO SAVE TO DB
+            const itemsToSave = [];
+            const pureFeeAmount = parseFloat(rfpFee) || 0;
+
+            if (pureFeeAmount > 0) {
+                itemsToSave.push({
+                    description: "Professional Services (Fees)",
+                    net: pureFeeAmount,
+                    vatRate: rfpFeeVat ? 0.18 : 0
+                });
+            }
+
+            costItems.forEach(c => {
+                const amt = parseFloat(c.amount) || 0;
+                if (c.isVisibleInRfp !== false) {
+                    itemsToSave.push({
+                        description: `${c.type || 'Expense'}: ${c.description}`,
+                        net: amt,
+                        vatRate: c.applyVat ? 0.18 : 0
+                    });
+                }
+            });
+
             const payload = {
                 rfpId: rfp.id,
-                amount: financials.totalNet,
-                vatAmount: financials.totalVat,
                 description: finalDescription,
-                projectName: finalDescription, // Explicitly override the old text with the new description
+                projectName: finalDescription, 
                 recipient: formData.recipient,
                 recipientAddress: formData.recipientAddress,
                 recipientVat: formData.recipientVat,
-                vatApplicable: true, // Always true to force backend to use our explicit vatAmount
-                feeVatApplicable: rfpFeeVat, // Store the Fee component's VAT status
-                contactPerson: contactPerson // Save contact person to RFP
+                contactPerson: contactPerson,
+                items: itemsToSave
             };
 
             if (isRevision) {
@@ -331,7 +299,7 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                 alert("Revision created.");
             } else {
                 const rfpRef = doc(db, 'rfps', rfp.id);
-                await updateDoc(rfpRef, { ...payload, totalAmount: financials.totalGross });
+                await updateDoc(rfpRef, payload);
             }
             onClose();
         } catch (error) {
@@ -369,7 +337,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                 <div className="space-y-2">
                     <div className="flex justify-between items-center">
                         <label className="block text-sm font-medium text-gray-700">Recipient</label>
-                        {/* Type Toggle */}
                         <div className="flex bg-gray-100 p-0.5 rounded text-[10px]">
                             <button
                                 type="button"
@@ -390,7 +357,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
 
                     <select name="recipient" className={`mt-1 block w-full border-gray-300 rounded-md p-2 bg-white ${missingDataWarning ? 'ring-2 ring-red-500' : ''}`} value={formData.recipient} onChange={handleClientChange} required>
                         <option value="">-- Select {recipientType === 'company' ? 'Company' : 'Individual'} --</option>
-                        {/* Always include the current recipient as an option even if not in the DB currently */}
                         {formData.recipient && !filteredClients.find(c => getClientName(c) === formData.recipient) && (
                             <option value={formData.recipient}>{formData.recipient} (Legacy)</option>
                         )}
@@ -400,7 +366,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                         })}
                     </select>
 
-                    {/* Show Contact Person if Company Selected */}
                     {recipientType === 'company' && contactPerson && (
                         <div className="flex items-center text-xs text-gray-500 bg-gray-50 p-2 rounded border border-gray-200 mt-1">
                             <UserCircleIcon className="h-4 w-4 mr-2 text-indigo-500" />
@@ -409,7 +374,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                     )}
                 </div>
 
-                {/* EDITABLE ADDRESS AND VAT FIELDS */}
                 <div className="grid grid-cols-2 gap-4">
                     <div className="col-span-2">
                         <label className="block text-sm font-medium text-gray-700">Address</label>
@@ -464,7 +428,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                     )}
                 </div>
 
-                {/* --- ITEMIZED BREAKDOWN --- */}
                 <div className="border rounded-lg overflow-hidden border-gray-300">
                     <div className="p-3 bg-gray-50 border-b flex justify-between items-center">
                         <span className="font-bold text-sm text-gray-800">RFP Composition</span>
@@ -482,7 +445,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {/* 1. RFP Amount (Fees) */}
                                 <tr className="bg-blue-50/20">
                                     <td className="p-2 font-bold text-blue-600">RFP Amount</td>
                                     <td className="p-2">Professional Fees (Time/Labour)</td>
@@ -505,7 +467,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                                     </td>
                                 </tr>
 
-                                {/* 2. Costs */}
                                 {itemsLoading ? <tr><td colSpan="4" className="p-2 text-center text-gray-400">Loading costs...</td></tr> : (
                                     costItems.map(item => (
                                         <tr key={item.id} className="hover:bg-gray-50">
@@ -532,7 +493,6 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                     </div>
                 </div>
 
-                {/* Financial Summary */}
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-2">
                     <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Total Net Amount:</span>

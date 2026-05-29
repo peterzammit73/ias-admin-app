@@ -1,5 +1,5 @@
 // Root: src/modules/billing/Invoices.jsx
-// Version: 17.14 - Fixed import path resolution
+// Version: 17.19 - Fixed Legacy Array of Strings Collision
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
     collection,
@@ -39,11 +39,11 @@ import {
     LockClosedIcon
 } from '@heroicons/react/24/outline';
 
-import { db, functions } from '/src/firebase.js';
-import ProjectCostAuditModal from '/src/modules/billing/ProjectCostAuditModal.jsx';
-import Modal from '/src/components/Modal.jsx';
-import DocumentTemplate from '/src/modules/billing/DocumentTemplate.jsx';
-import UpdateRFPModal from '/src/modules/billing/UpdateRFPModal.jsx';
+import { db, functions } from '../../firebase.js';
+import ProjectCostAuditModal from './ProjectCostAuditModal.jsx';
+import Modal from '../../components/Modal.jsx';
+import DocumentTemplate from './DocumentTemplate.jsx';
+import UpdateRFPModal from './UpdateRFPModal.jsx';
 
 const DocumentsModal = ({ rfp, onClose }) => {
     const [selectedDocKey, setSelectedDocKey] = useState(null);
@@ -66,9 +66,61 @@ const DocumentsModal = ({ rfp, onClose }) => {
         const fetchChain = async () => {
             if (!rfp) { setLoadingHistory(false); return; }
             setLoadingHistory(true);
+
+            // INTELLIGENT NORMALIZATION: Fix legacy VAT flags based on actual item totals
+            const normalizeRawRfp = (docData) => {
+                let amt = parseFloat(docData.amount) || 0;
+                let vat = 0;
+                let total = 0;
+                let vatApp = docData.vatApplicable;
+
+                const hasValidItemBreakdown = docData.items && docData.items.length > 0 && typeof docData.items[0] === 'object' && docData.items[0] !== null && 'net' in docData.items[0];
+
+                if (hasValidItemBreakdown) {
+                    vat = docData.items.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
+                    total = docData.items.reduce((s, i) => s + (parseFloat(i.total) || 0), 0);
+                    amt = docData.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+                    vatApp = vat > 0;
+                } else {
+                    if (docData.totalAmount !== undefined && docData.totalAmount !== null) {
+                        total = parseFloat(docData.totalAmount);
+                        if (Math.abs(total - amt) < 0.01) {
+                            vat = 0;
+                            vatApp = false;
+                        } else {
+                            vat = total - amt;
+                            vatApp = vat > 0;
+                        }
+                    } else if (docData.feeVatApplicable === false) {
+                        vat = 0;
+                        vatApp = false;
+                        total = amt;
+                    } else if ((docData.status === 'Paid' || docData.status === 'Closed') && docData.invoicedAmount !== undefined && Math.abs(parseFloat(docData.invoicedAmount) - amt) < 0.01) {
+                        vat = 0;
+                        vatApp = false;
+                        total = amt;
+                    } else if (docData.vatAmount !== undefined && docData.vatAmount !== null) {
+                        vat = parseFloat(docData.vatAmount);
+                        vatApp = vat > 0;
+                        total = amt + vat;
+                    } else {
+                        vat = vatApp ? amt * 0.18 : 0;
+                        total = amt + vat;
+                    }
+                }
+
+                return {
+                    ...docData,
+                    amount: amt,
+                    vatAmount: vat,
+                    totalAmount: total,
+                    vatApplicable: vatApp
+                };
+            };
+
             try {
                 if (rfp.status === 'Pending' || !rfp.rfpCode) {
-                    setRfpChain([{ id: rfp.id, ...rfp, rfpNumber: rfp.rfpNumber || rfp.rfpCode || `PENDING-${rfp.projectNumber}`, createdAtObj: rfp.createdAt?.toDate ? rfp.createdAt.toDate() : new Date(rfp.createdAt || Date.now()) }]);
+                    setRfpChain([normalizeRawRfp({ id: rfp.id, ...rfp, rfpNumber: rfp.rfpNumber || rfp.rfpCode || `PENDING-${rfp.projectNumber}`, createdAtObj: rfp.createdAt?.toDate ? rfp.createdAt.toDate() : new Date(rfp.createdAt || Date.now()) })]);
                     setLoadingHistory(false);
                     return;
                 }
@@ -76,9 +128,9 @@ const DocumentsModal = ({ rfp, onClose }) => {
                 const baseCode = currentCode.replace(/-R\d+$/, '');
                 const q = query(collection(db, 'rfps'), where('projectNumber', '==', String(rfp.projectNumber)));
                 const snap = await getDocs(q);
-                const chain = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(item => (item.rfpCode || '').startsWith(baseCode)).map(item => ({ ...item, createdAtObj: item.createdAt?.toDate ? item.createdAt.toDate() : new Date(item.createdAt || Date.now()), issuedAtObj: item.issuedAt?.toDate ? item.issuedAt.toDate() : null })).sort((a, b) => (a.issuedAtObj || a.createdAtObj) - (b.issuedAtObj || b.createdAtObj));
-                setRfpChain(chain.length > 0 ? chain : [rfp]);
-            } catch (e) { console.error(e); setRfpChain([{ ...rfp, rfpNumber: rfp.rfpCode }]); } finally { setLoadingHistory(false); }
+                const chain = snap.docs.map(d => normalizeRawRfp({ id: d.id, ...d.data() })).filter(item => (item.rfpCode || '').startsWith(baseCode)).map(item => ({ ...item, createdAtObj: item.createdAt?.toDate ? item.createdAt.toDate() : new Date(item.createdAt || Date.now()), issuedAtObj: item.issuedAt?.toDate ? item.issuedAt.toDate() : null })).sort((a, b) => (a.issuedAtObj || a.createdAtObj) - (b.issuedAtObj || b.createdAtObj));
+                setRfpChain(chain.length > 0 ? chain : [normalizeRawRfp(rfp)]);
+            } catch (e) { console.error(e); setRfpChain([normalizeRawRfp({ ...rfp, rfpNumber: rfp.rfpCode })]); } finally { setLoadingHistory(false); }
         };
         fetchChain();
     }, [rfp]);
@@ -421,11 +473,11 @@ const PaymentActionModal = ({ actionData, onClose, onSuccess }) => {
 // ... RfpRow ...
 const RfpRow = React.memo(({ rfp, isSelected, onSelect }) => {
     // Calculated Values
-    const displayVat = rfp.vatApplicable ? (rfp.amount * 0.18) : 0;
+    const displayVat = rfp.vat;
 
     // Ex VAT Values for Paid and Credited
-    const paidExVat = rfp.vatApplicable && rfp.invoiced > 0 ? (rfp.invoiced / 1.18) : rfp.invoiced;
-    const credExVat = rfp.vatApplicable && rfp.credited > 0 ? (rfp.credited / 1.18) : rfp.credited;
+    const paidExVat = rfp.invoicedExVat;
+    const credExVat = rfp.creditedExVat;
 
     const formattedDate = rfp.createdAt ? new Date(rfp.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A';
 
@@ -469,10 +521,6 @@ const Invoices = () => {
 
     // Archive Filter State ('all', 'open', 'closed')
     const [archiveFilter, setArchiveFilter] = useState('all');
-
-    // Deep Search State (Used now for Project Lookup in Archive)
-    const [deepSearchResults, setDeepSearchResults] = useState([]);
-    const [isDeepSearching, setIsDeepSearching] = useState(false);
 
     const [selectedRfpId, setSelectedRfpId] = useState(null);
     const [auditRfp, setAuditRfp] = useState(null);
@@ -551,17 +599,55 @@ const Invoices = () => {
 
     const mapDocData = (doc) => {
         const d = doc.data();
-        const amt = parseFloat(d.amount) || 0;
-        const vat = d.vatApplicable ? amt * 0.18 : 0;
-        const total = amt + vat;
+        let amt = parseFloat(d.amount) || 0;
+        let vat = 0;
+        let total = 0;
+        let vatApp = d.vatApplicable;
+
+        // INTELLIGENT NORMALIZATION: Trust items array if it exists AND contains objects (not legacy string IDs)
+        const hasValidItemBreakdown = d.items && d.items.length > 0 && typeof d.items[0] === 'object' && d.items[0] !== null && 'net' in d.items[0];
+
+        if (hasValidItemBreakdown) {
+            vat = d.items.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
+            total = d.items.reduce((s, i) => s + (parseFloat(i.total) || 0), 0);
+            amt = d.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+            vatApp = vat > 0;
+        } else {
+            if (d.totalAmount !== undefined && d.totalAmount !== null) {
+                total = parseFloat(d.totalAmount);
+                if (Math.abs(total - amt) < 0.01) {
+                    vat = 0;
+                    vatApp = false;
+                } else {
+                    vat = total - amt;
+                    vatApp = vat > 0;
+                }
+            } else if (d.feeVatApplicable === false) {
+                vat = 0;
+                vatApp = false;
+                total = amt;
+            } else if ((d.status === 'Paid' || d.status === 'Closed') && d.invoicedAmount !== undefined && Math.abs(parseFloat(d.invoicedAmount) - amt) < 0.01) {
+                vat = 0;
+                vatApp = false;
+                total = amt;
+            } else if (d.vatAmount !== undefined && d.vatAmount !== null) {
+                vat = parseFloat(d.vatAmount);
+                vatApp = vat > 0;
+                total = amt + vat;
+            } else {
+                vat = vatApp ? amt * 0.18 : 0;
+                total = amt + vat;
+            }
+        }
+
         let inv = parseFloat(d.invoicedAmount) || 0;
         if (inv === 0 && d.payments) inv = Object.values(d.payments).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
         let cred = parseFloat(d.creditedAmount) || 0;
         if (cred === 0 && d.credits) cred = Object.values(d.credits).reduce((s, c) => s + (parseFloat(c.amount) || 0), 0);
 
         // Calculated Ex VAT Values
-        const invExVat = d.vatApplicable && inv > 0 ? (inv / 1.18) : inv;
-        const credExVat = d.vatApplicable && cred > 0 ? (cred / 1.18) : cred;
+        const invExVat = vatApp && inv > 0 ? (inv / 1.18) : inv;
+        const credExVat = vatApp && cred > 0 ? (cred / 1.18) : cred;
 
         return {
             id: doc.id,
@@ -569,6 +655,7 @@ const Invoices = () => {
             amount: amt,
             vat: vat,
             gross: total,
+            vatApplicable: vatApp,
             invoiced: inv, // Gross Invoiced
             credited: cred, // Gross Credited
             invoicedExVat: invExVat,

@@ -1,5 +1,5 @@
 // Root: src/modules/billing/WorkInProgress.jsx
-// Version: 9.0 - Added Dirty State Locking
+// Version: 9.1 - Fixed CreateRFPModal Props
 import React, { useState, useEffect, useMemo } from 'react';
 import {
     onSnapshot,
@@ -355,11 +355,10 @@ const WorkInProgress = () => {
 
             {isRFPModalOpen && (
                 <CreateRFPModal
-                    isOpen={isRFPModalOpen}
+                    show={isRFPModalOpen}
                     onClose={() => setIsRFPModalOpen(false)}
                     onSuccess={handleActionSuccess}
-                    selectedProject={selectedProjectNum}
-                    selectedEntries={projectDetails}
+                    preSelectedItems={projectDetails}
                 />
             )}
 

@@ -1,5 +1,5 @@
 // Root: src/modules/billing/CreateRFPModal.jsx
-// Version: 5.5 - Fixed Payload Mixed Array Issue (Filtered out costs from timesheet items array)
+// Version: 5.11 - Fixed Override Amount Propagation
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -7,11 +7,11 @@ import { db, functions } from '/src/firebase.js';
 import Modal from '/src/components/Modal.jsx';
 import { ArchiveBoxArrowDownIcon, CalendarDaysIcon, ExclamationTriangleIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
-const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedEntries }) => {
-    // --- MODE SWITCH: 'create' or 'cleanup' ---
-    const [mode, setMode] = useState('create');
+const CreateRFPModal = ({ show, onClose, onSuccess, preSelectedItems, projectsMap }) => {
+    // Determine the Project ID from passed items
+    const selectedProject = preSelectedItems && preSelectedItems.length > 0 ? preSelectedItems[0].project : null;
 
-    // --- Create Mode State ---
+    const [mode, setMode] = useState('create');
     const [recipient, setRecipient] = useState('');
     const [recipientAddress, setRecipientAddress] = useState('');
     const [recipientVat, setRecipientVat] = useState('');
@@ -24,20 +24,20 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
     const [projectCosts, setProjectCosts] = useState([]);
     const [selectedCosts, setSelectedCosts] = useState([]);
     const [nonChargeableIds, setNonChargeableIds] = useState(new Set());
-    // NEW: Hidden Costs Set
     const [hiddenCostIds, setHiddenCostIds] = useState(new Set());
     const [costManagementFees, setCostManagementFees] = useState({});
     const [baseTimeCost, setBaseTimeCost] = useState(0);
     const [baseExpenseCost, setBaseExpenseCost] = useState(0);
 
-    // --- Cleanup Mode State ---
+    // NEW STATE: Toggle VAT specifically on Professional Fees
+    const [feeVatApplicable, setFeeVatApplicable] = useState(true);
+
     const [cleanupDate, setCleanupDate] = useState(new Date().toISOString().split('T')[0]);
     const [cleanupLoading, setCleanupLoading] = useState(false);
 
     useEffect(() => {
-        if (isOpen && selectedProject) {
-            // Calculate Base Time Cost from passed entries (ignoring cost items which lack e.cost)
-            const timeTotal = (selectedEntries || []).reduce((sum, e) => sum + (e.cost || 0), 0);
+        if (show && selectedProject) {
+            const timeTotal = (preSelectedItems || []).reduce((sum, e) => sum + (e.calculatedCost || parseFloat(e.cost) || 0), 0);
             setBaseTimeCost(timeTotal);
 
             const loadData = async () => {
@@ -50,13 +50,11 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
 
                     const variations = Array.from(new Set([selectedProject, trimmed, padded, numValue, stringNum])).filter(v => v !== undefined && v !== null && v !== "");
 
-                    // Fetch Costs
                     const costQ = query(collection(db, 'project_costs'), where('projectNumber', 'in', variations), where('billingStatus', '==', 'unbilled'));
                     const costSnap = await getDocs(costQ);
                     const costs = costSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                     setProjectCosts(costs);
 
-                    // Default selections
                     const allCostIds = costs.map(c => c.id);
                     setSelectedCosts(allCostIds);
                     setNonChargeableIds(new Set());
@@ -65,7 +63,6 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
                     costs.forEach(c => initialFees[c.id] = 10);
                     setCostManagementFees(initialFees);
 
-                    // Fetch Project & Client
                     const projQ = query(collection(db, 'projects'), where('projectNumber', 'in', variations));
                     const projSnap = await getDocs(projQ);
 
@@ -98,11 +95,11 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
             loadData();
             setTimeProfitMargin(20);
             setOverrideAmount('');
-            setMode('create'); // Reset to create mode on open
+            setFeeVatApplicable(true); // Reset toggle
+            setMode('create'); 
         }
-    }, [isOpen, selectedProject, selectedEntries]);
+    }, [show, selectedProject, preSelectedItems]);
 
-    // Financial Calculation Logic
     const totalManagementFee = projectCosts
         .filter(c => selectedCosts.includes(c.id))
         .reduce((sum, c) => {
@@ -125,11 +122,9 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
         }
     }, [baseTimeCost, projectCosts, selectedCosts, timeProfitMargin, costManagementFees, overrideAmount, totalManagementFee]);
 
-    // Toggle Handlers
     const toggleInc = (costId) => {
         if (selectedCosts.includes(costId)) {
             setSelectedCosts(prev => prev.filter(id => id !== costId));
-            // If excluded, reset visibility preference (optional)
             setHiddenCostIds(prev => { const n = new Set(prev); n.delete(costId); return n; });
         } else {
             setSelectedCosts(prev => [...prev, costId]);
@@ -144,8 +139,7 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
                 next.delete(costId);
             } else {
                 next.add(costId);
-                setSelectedCosts(prev => prev.filter(id => id !== costId));
-                // Also unhide if moving to non-chargeable (cleanup)
+                setSelectedCosts(sel => { const n = new Set(sel); n.delete(costId); return n; });
                 setHiddenCostIds(prev => { const n = new Set(prev); n.delete(costId); return n; });
             }
             return next;
@@ -170,19 +164,65 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
         selectedCosts.forEach(id => { feesToSave[id] = costManagementFees[id] || 0; });
         const hiddenList = Array.from(hiddenCostIds);
 
-        // FIX: Extract ONLY timesheet entry IDs to prevent backend failure when it attempts to update timesheet_entries with cost IDs
-        const timeItemsIds = (selectedEntries || [])
+        // Fix extraction of Timesheet IDs so they don't break backend items payload mapping
+        const timeItemsIds = (preSelectedItems || [])
             .filter(e => !e.isCost)
             .map(e => e.id);
+
+        // BUILD ITEMIZED ARRAY TO SAVE TO DB
+        const itemsToSave = [];
+        let hiddenCostsSum = 0;
+        const visibleCosts = [];
+
+        projectCosts.forEach(c => {
+            if (selectedCosts.includes(c.id)) {
+                if (hiddenCostIds.has(c.id)) hiddenCostsSum += parseFloat(c.amount) || 0;
+                else visibleCosts.push(c);
+            }
+        });
+
+        const pureFeeAmount = baseTimeCost * (1 + (timeProfitMargin / 100)) + totalManagementFee; 
+        let displayFeeAmount = pureFeeAmount + hiddenCostsSum;
+        
+        // ---> APPLY OVERRIDE LOGIC HERE <---
+        if (overrideAmount !== '' && !isNaN(parseFloat(overrideAmount))) {
+            const visibleCostsSum = visibleCosts.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+            // Ensure fee absorbs the override amount properly
+            displayFeeAmount = Math.max(0, parseFloat(overrideAmount) - visibleCostsSum);
+        }
+        
+        if (displayFeeAmount > 0) {
+             itemsToSave.push({
+                 description: "Professional Services (Fees)",
+                 net: displayFeeAmount,
+                 vatRate: feeVatApplicable ? 0.18 : 0
+             });
+        }
+
+        visibleCosts.forEach(c => {
+             const amt = parseFloat(c.amount) || 0;
+             itemsToSave.push({
+                 description: `${c.type || 'Expense'}: ${c.description}`,
+                 net: amt,
+                 vatRate: c.vatApplicable !== false ? 0.18 : 0
+             });
+        });
 
         try {
             const createFn = httpsCallable(functions, 'createRFP');
             await createFn({
-                projectNumber: selectedProject, recipient, recipientAddress, recipientVat, description, amount: amount,
-                vatApplicable: false, vatAmount: 0, isIndependent: false,
-                items: timeItemsIds, // Updated parameter to only include timesheets
-                costIds: selectedCosts, writeOffCostIds: costsToWriteOff, costManagementFees: feesToSave,
-                hiddenCostIds: hiddenList // Pass hidden preference
+                projectNumber: selectedProject, 
+                recipient, 
+                recipientAddress, 
+                recipientVat, 
+                description, 
+                isIndependent: false,
+                items: itemsToSave, 
+                timeIds: timeItemsIds, 
+                costIds: selectedCosts, 
+                writeOffCostIds: costsToWriteOff, 
+                costManagementFees: feesToSave,
+                hiddenCostIds: hiddenList 
             });
             if (onSuccess) onSuccess(selectedProject); else onClose();
         } catch (error) {
@@ -193,7 +233,6 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
         }
     };
 
-    // --- NEW: CLEANUP HANDLER ---
     const handleCleanup = async () => {
         if (!window.confirm(`Are you sure you want to mark ALL entries before ${cleanupDate} as billed? This action cannot be undone.`)) return;
         setCleanupLoading(true);
@@ -213,15 +252,14 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
         }
     };
 
-    if (!isOpen) return null;
+    if (!show) return null;
 
     const calculatedTimeTotal = baseTimeCost * (1 + (timeProfitMargin / 100));
     const displayTimeAndFees = calculatedTimeTotal + totalManagementFee;
     const isOverridden = overrideAmount !== '' && !isNaN(parseFloat(overrideAmount));
 
     return (
-        <Modal show={isOpen} onClose={onClose} title={`Manage Project ${selectedProject}`} maxWidth="sm:max-w-6xl">
-            {/* --- TAB SWITCHER --- */}
+        <Modal show={show} onClose={onClose} title={`Manage Project ${selectedProject}`} maxWidth="sm:max-w-6xl">
             <div className="flex border-b border-gray-200 mb-6">
                 <button
                     onClick={() => setMode('create')}
@@ -276,9 +314,7 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
                     </div>
                 </div>
             ) : (
-                // --- CREATE RFP FORM (Standard) ---
                 <form onSubmit={handleCreate} className="space-y-5">
-                    {/* Header Info */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-1">
                             <label className="block text-xs font-bold text-gray-500 uppercase">Project</label>
@@ -309,7 +345,6 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
                         <textarea className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-orange-500 focus:border-orange-500" rows="2" value={description} onChange={e => setDescription(e.target.value)} required />
                     </div>
 
-                    {/* Financial Breakdown Section */}
                     <div className={`bg-gray-50 p-4 rounded-lg border transition-colors ${isOverridden ? 'border-orange-300 ring-1 ring-orange-200' : 'border-gray-200'}`}>
                         <div className={`flex items-center justify-between transition-opacity ${isOverridden ? 'opacity-50' : 'opacity-100'}`}>
                             <div className="flex-1">
@@ -317,6 +352,16 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
                                 <div className="text-xs text-gray-500">Base Time: €{baseTimeCost.toFixed(2)} + Mgmt Fees: €{totalManagementFee.toFixed(2)}</div>
                             </div>
                             <div className="flex items-center gap-4">
+                                <label className="flex items-center cursor-pointer text-xs font-bold text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 shadow-sm">
+                                    <input 
+                                        type="checkbox" 
+                                        className="h-3 w-3 mr-1.5 rounded text-orange-600 focus:ring-orange-500"
+                                        checked={feeVatApplicable}
+                                        onChange={(e) => setFeeVatApplicable(e.target.checked)}
+                                        disabled={isOverridden}
+                                    />
+                                    VAT App. (18%)
+                                </label>
                                 <div className="flex items-center bg-white border border-gray-300 rounded px-2 py-1">
                                     <span className="text-xs text-gray-500 mr-1">Time Margin:</span>
                                     <input type="number" className="w-10 text-right text-sm font-bold text-orange-600 focus:outline-none" value={timeProfitMargin} onChange={e => setTimeProfitMargin(parseFloat(e.target.value) || 0)} disabled={isOverridden} />
@@ -391,7 +436,6 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
                             ) : <div className="text-xs text-gray-400 italic pl-1">No unbilled expenses recorded.</div>}
                         </div>
 
-                        {/* Override Section */}
                         <div className="border-t border-gray-300 pt-3 mt-3">
                             <div className="flex justify-between items-center mb-2">
                                 <label className="block text-xs font-bold text-orange-600 uppercase">Override Total Net</label>
@@ -400,7 +444,6 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
                             <input type="number" step="0.01" placeholder="Enter amount to override..." className="w-full p-2 border border-orange-200 rounded text-sm focus:ring-orange-500 focus:border-orange-500 bg-white" value={overrideAmount} onChange={e => setOverrideAmount(e.target.value)} />
                         </div>
 
-                        {/* Summary */}
                         <div className="border-t-2 border-gray-200 pt-3 mt-3 space-y-1">
                             <div className="flex justify-between text-base font-bold text-gray-900 pt-1">
                                 <span>Total Amount (Excl. VAT):</span>
@@ -410,9 +453,13 @@ const CreateRFPModal = ({ isOpen, onClose, onSuccess, selectedProject, selectedE
                         </div>
                     </div>
 
-                    <div className="flex justify-end pt-2">
-                        <button type="button" onClick={onClose} className="mr-3 px-4 py-2 text-gray-600 hover:text-gray-800 text-sm font-medium border border-gray-300 rounded hover:bg-gray-50" disabled={loading}>Cancel</button>
-                        <button type="submit" className="px-6 py-2 bg-orange-600 text-white rounded shadow-sm hover:bg-orange-700 text-sm font-bold flex items-center" disabled={loading}>{loading ? 'Creating...' : 'Request RFP'}</button>
+                    <div className="flex justify-end gap-3 pt-2">
+                        <button type="button" onClick={onClose} className="mr-3 px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500" disabled={loading}>
+                            Cancel
+                        </button>
+                        <button type="submit" className="inline-flex justify-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50" disabled={loading}>
+                            {loading ? 'Processing...' : 'Generate RFP'}
+                        </button>
                     </div>
                 </form>
             )}

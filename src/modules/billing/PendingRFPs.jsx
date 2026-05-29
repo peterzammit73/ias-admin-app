@@ -1,9 +1,9 @@
 // Root: src/modules/billing/PendingRFPs.jsx
-// Version: 4.6 - Fixed Imports and Dropdown Logic
+// Version: 4.14 - Final Safety Nets for Issue Preview
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, onSnapshot, doc, deleteDoc, getDocs, updateDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../../firebase.js'; // Fixed relative import
+import { db, functions } from '../../firebase.js'; 
 import {
     PrinterIcon,
     PencilSquareIcon,
@@ -16,19 +16,15 @@ import {
     UserIcon,
     EyeSlashIcon
 } from '@heroicons/react/24/outline';
-import Modal from '../../components/Modal.jsx'; // Fixed relative import
-import DocumentTemplate from './DocumentTemplate.jsx'; // Fixed relative import
-import IssueRFPModal from './IssueRFPModal.jsx'; // Fixed relative import
-import UpdateRFPModal from './UpdateRFPModal.jsx'; // Fixed relative import
+import Modal from '../../components/Modal.jsx'; 
+import DocumentTemplate from './DocumentTemplate.jsx'; 
+import UpdateRFPModal from './UpdateRFPModal.jsx'; 
 
 const CreateManualRFPModal = ({ isOpen, onClose }) => {
     const [loading, setLoading] = useState(false);
     const [projects, setProjects] = useState([]);
-
-    // NEW: Client Data State
     const [allClients, setAllClients] = useState([]);
 
-    // Form State
     const [projectNumber, setProjectNumber] = useState('');
     const [recipientType, setRecipientType] = useState('company');
     const [recipient, setRecipient] = useState('');
@@ -36,28 +32,24 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
     const [recipientVat, setRecipientVat] = useState('');
     const [description, setDescription] = useState('');
 
-    // Financials
     const [feeAmount, setFeeAmount] = useState('');
+    const [feeVatApplicable, setFeeVatApplicable] = useState(true);
 
-    // Cost Selection State
     const [availableCosts, setAvailableCosts] = useState([]);
     const [selectedCostIds, setSelectedCostIds] = useState(new Set());
     const [nonChargeableIds, setNonChargeableIds] = useState(new Set());
-    // NEW: Hidden Costs for Manual RFP
     const [hiddenCostIds, setHiddenCostIds] = useState(new Set());
     const [costSettings, setCostSettings] = useState({});
 
     useEffect(() => {
         if (isOpen) {
             const fetchInitialData = async () => {
-                // 1. Projects
                 const qProj = query(collection(db, 'projects'), where('status', '==', 'Active'));
                 const snapProj = await getDocs(qProj);
                 const listProj = snapProj.docs.map(d => d.data());
                 listProj.sort((a, b) => (parseInt(a.projectNumber) || 0) - (parseInt(b.projectNumber) || 0));
                 setProjects(listProj);
 
-                // 2. Clients (Fetch all to filter locally)
                 const qClients = query(collection(db, 'clients'));
                 const snapClients = await getDocs(qClients);
                 const listClients = snapClients.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -65,7 +57,6 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
             };
             fetchInitialData();
 
-            // Reset Form
             setProjectNumber('');
             setRecipientType('company');
             setRecipient('');
@@ -73,6 +64,7 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
             setRecipientVat('');
             setDescription('');
             setFeeAmount('');
+            setFeeVatApplicable(true);
             setAvailableCosts([]);
             setSelectedCostIds(new Set());
             setNonChargeableIds(new Set());
@@ -81,7 +73,6 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
         }
     }, [isOpen]);
 
-    // Filter Clients based on selected Type
     const filteredClients = useMemo(() => {
         if (!allClients) return [];
         return allClients.filter(c => {
@@ -94,7 +85,6 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
         });
     }, [allClients, recipientType]);
 
-    // Handle Client Selection from Datalist
     const handleRecipientChange = (e) => {
         const val = e.target.value;
         setRecipient(val);
@@ -111,7 +101,6 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
         }
     };
 
-    // Fetch Project Data (When project is selected)
     useEffect(() => {
         const fetchProjectData = async () => {
             if (!projectNumber) {
@@ -136,7 +125,6 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
 
                 const variations = Array.from(distinctValues);
 
-                // 1. Client Info (from Project link)
                 const proj = projects.find(p => {
                     const pNum = String(p.projectNumber);
                     return variations.some(v => String(v) === pNum);
@@ -160,7 +148,6 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
                     }
                 }
 
-                // 2. Unbilled Costs
                 const costsQ = query(
                     collection(db, 'project_costs'),
                     where('projectNumber', 'in', variations),
@@ -186,7 +173,6 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
         fetchProjectData();
     }, [projectNumber, projects, allClients]);
 
-    // Computed Totals
     const financials = useMemo(() => {
         const baseFee = parseFloat(feeAmount) || 0;
         let costsNet = 0;
@@ -216,7 +202,7 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
             setHiddenCostIds(prev => { const n = new Set(prev); n.delete(id); return n; });
         } else {
             next.add(id);
-            setNonChargeableIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+            setNonChargeableIds(prev => { const next = new Set(prev); next.delete(id); return next; });
         }
         setSelectedCostIds(next);
     };
@@ -263,6 +249,36 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
             costManagementFees[id] = costSettings[id]?.fee || 0;
         });
 
+        const itemsToSave = [];
+        let hiddenCostsSum = 0;
+        const visibleCosts = [];
+
+        availableCosts.forEach(c => {
+            if (selectedCostIds.has(c.id)) {
+                if (hiddenCostIds.has(c.id)) hiddenCostsSum += parseFloat(c.amount) || 0;
+                else visibleCosts.push(c);
+            }
+        });
+
+        const displayFeeAmount = financials.totalProfessionalFees + hiddenCostsSum;
+        
+        if (displayFeeAmount > 0) {
+             itemsToSave.push({
+                 description: "Professional Services (Fees)",
+                 net: displayFeeAmount,
+                 vatRate: feeVatApplicable ? 0.18 : 0
+             });
+        }
+
+        visibleCosts.forEach(c => {
+             const amt = parseFloat(c.amount) || 0;
+             itemsToSave.push({
+                 description: `${c.type || 'Expense'}: ${c.description}`,
+                 net: amt,
+                 vatRate: c.vatApplicable !== false ? 0.18 : 0
+             });
+        });
+
         try {
             const createFn = httpsCallable(functions, 'createRFP');
             await createFn({
@@ -271,16 +287,13 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
                 recipientAddress,
                 recipientVat,
                 description,
-                amount: financials.totalNet,
-                vatAmount: 0,
-                vatApplicable: false,
                 isIndependent: true,
-                items: [],
+                items: itemsToSave,
+                timeIds: [], 
                 costIds: costIds,
                 writeOffCostIds: writeOffCostIds,
                 costManagementFees: costManagementFees,
-                hiddenCostIds: hiddenList, // Pass new hidden list
-                feeVatApplicable: false
+                hiddenCostIds: hiddenList 
             });
             onClose();
         } catch (error) {
@@ -365,7 +378,6 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
 
                 <hr className="border-gray-200" />
 
-                {/* Fees Section */}
                 <div>
                     <h4 className="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">1. Professional Fees</h4>
                     <div className="bg-gray-50 p-4 rounded border border-gray-200 space-y-3">
@@ -373,6 +385,17 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
                             <div className="flex-1">
                                 <label className="block text-xs text-gray-500 uppercase font-bold">Manual Fee Amount (Excl. VAT)</label>
                                 <input type="number" step="0.01" className="w-full p-2 border border-gray-300 rounded text-sm font-mono mt-1 focus:ring-orange-500 focus:border-orange-500 outline-none" value={feeAmount} onChange={e => setFeeAmount(e.target.value)} placeholder="0.00" />
+                            </div>
+                            <div className="flex flex-col pt-5">
+                                <label className="flex items-center cursor-pointer text-xs font-bold text-gray-600 bg-white border border-gray-300 rounded px-3 py-2 shadow-sm">
+                                    <input 
+                                        type="checkbox" 
+                                        className="h-4 w-4 mr-2 rounded text-orange-600 focus:ring-orange-500"
+                                        checked={feeVatApplicable}
+                                        onChange={(e) => setFeeVatApplicable(e.target.checked)}
+                                    />
+                                    VAT App. (18%)
+                                </label>
                             </div>
                         </div>
 
@@ -390,7 +413,6 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
                     </div>
                 </div>
 
-                {/* Costs Section */}
                 <div>
                     <h4 className="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider flex justify-between">
                         <span>2. Project Costs (Reimbursements)</span>
@@ -517,79 +539,80 @@ const IssuePreviewModal = ({ rfp, issuer, onClose, onConfirm, isProcessing }) =>
     const [previewData, setPreviewData] = useState(null);
     const [calculating, setCalculating] = useState(true);
 
-    // Helper: Round UP to 2 decimal places (Ceiling)
     const roundUp = (num) => Math.ceil(num * 100) / 100;
 
     useEffect(() => {
         const buildPreview = async () => {
             setCalculating(true);
             try {
-                // 1. Fetch Linked Costs to determine individual VAT status and visibility
-                let costs = [];
-                if (rfp.linkedCostIds && rfp.linkedCostIds.length > 0) {
-                    const cQ = query(collection(db, 'project_costs'), where('rfpId', '==', rfp.id));
-                    const cSnap = await getDocs(cQ);
-                    costs = cSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-                }
+                let finalItems = Array.isArray(rfp.items) ? rfp.items : [];
+                const hasValidItemBreakdown = finalItems.length > 0 && typeof finalItems[0] === 'object' && finalItems[0] !== null && 'net' in finalItems[0];
+                
+                let grandNet = 0;
+                let grandVat = 0;
+                let grandTotal = 0;
 
-                // 2. Build Item List
-                const items = [];
-                let hiddenCostsSum = 0;
-
-                // Separate visible and hidden costs
-                const visibleCosts = [];
-                costs.forEach(c => {
-                    const amt = parseFloat(c.amount) || 0;
-                    // Check visibility flag (default true if undefined)
-                    if (c.isVisibleInRfp !== false) {
-                        visibleCosts.push(c);
-                    } else {
-                        hiddenCostsSum += amt;
+                if (hasValidItemBreakdown) {
+                    grandNet = finalItems.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+                    grandVat = finalItems.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
+                    grandTotal = finalItems.reduce((s, i) => s + (parseFloat(i.total) || 0), 0);
+                } else {
+                    // Fallback: If no items array exists, or it is an array of legacy string IDs, rebuild it
+                    finalItems = [];
+                    let costs = [];
+                    if (rfp.linkedCostIds && rfp.linkedCostIds.length > 0) {
+                        const cQ = query(collection(db, 'project_costs'), where('rfpId', '==', rfp.id));
+                        const cSnap = await getDocs(cQ);
+                        costs = cSnap.docs.map(d => ({ id: d.id, ...d.data() }));
                     }
-                });
 
-                // A. Professional Fees (Time Component)
-                // Fee = Total RFP Amount - Sum of ALL Costs (Visible + Hidden)
-                // The stored rfp.amount includes everything.
-                const totalAllCosts = costs.reduce((s, c) => s + (parseFloat(c.amount) || 0), 0);
-                const pureFeeAmount = Math.max(0, (parseFloat(rfp.amount) || 0) - totalAllCosts);
+                    let hiddenCostsSum = 0;
+                    const visibleCosts = [];
 
-                // Add Hidden Costs to the Fee Line Item
-                const displayFeeAmount = pureFeeAmount + hiddenCostsSum;
-
-                // Determine VAT for Fees
-                const feeVatApply = rfp.feeVatApplicable !== undefined ? rfp.feeVatApplicable : (rfp.vatApplicable !== false);
-                const feeVat = feeVatApply ? roundUp(displayFeeAmount * 0.18) : 0;
-
-                if (displayFeeAmount > 0) {
-                    items.push({
-                        description: "Professional Services (Fees)",
-                        net: displayFeeAmount,
-                        vatRate: feeVatApply ? 0.18 : 0,
-                        vat: feeVat,
-                        total: displayFeeAmount + feeVat
+                    costs.forEach(c => {
+                        const amt = parseFloat(c.amount) || 0;
+                        if (c.isVisibleInRfp !== false) {
+                            visibleCosts.push(c);
+                        } else {
+                            hiddenCostsSum += amt;
+                        }
                     });
+
+                    const totalAllCosts = costs.reduce((s, c) => s + (parseFloat(c.amount) || 0), 0);
+                    const pureFeeAmount = Math.max(0, (parseFloat(rfp.amount) || 0) - totalAllCosts);
+                    const displayFeeAmount = pureFeeAmount + hiddenCostsSum;
+
+                    const feeVatApply = rfp.feeVatApplicable !== undefined ? rfp.feeVatApplicable : (rfp.vatApplicable !== false);
+                    const feeVat = feeVatApply ? roundUp(displayFeeAmount * 0.18) : 0;
+
+                    if (displayFeeAmount > 0) {
+                        finalItems.push({
+                            description: "Professional Services (Fees)",
+                            net: displayFeeAmount,
+                            vatRate: feeVatApply ? 0.18 : 0,
+                            vat: feeVat,
+                            total: displayFeeAmount + feeVat
+                        });
+                    }
+
+                    visibleCosts.forEach(c => {
+                        const amt = parseFloat(c.amount) || 0;
+                        const costVatApply = c.vatApplicable !== false;
+                        const costVat = costVatApply ? roundUp(amt * 0.18) : 0;
+
+                        finalItems.push({
+                            description: `${c.type || 'Expense'}: ${c.description}`,
+                            net: amt,
+                            vatRate: costVatApply ? 0.18 : 0,
+                            vat: costVat,
+                            total: amt + costVat
+                        });
+                    });
+
+                    grandNet = finalItems.reduce((s, i) => s + i.net, 0);
+                    grandVat = finalItems.reduce((s, i) => s + i.vat, 0);
+                    grandTotal = finalItems.reduce((s, i) => s + i.total, 0);
                 }
-
-                // B. Visible Costs (Expenses)
-                visibleCosts.forEach(c => {
-                    const amt = parseFloat(c.amount) || 0;
-                    const costVatApply = c.vatApplicable !== false;
-                    const costVat = costVatApply ? roundUp(amt * 0.18) : 0;
-
-                    items.push({
-                        description: `${c.type || 'Expense'}: ${c.description}`,
-                        net: amt,
-                        vatRate: costVatApply ? 0.18 : 0,
-                        vat: costVat,
-                        total: amt + costVat
-                    });
-                });
-
-                // 3. Recalculate Grand Totals based on breakdown
-                const grandNet = items.reduce((s, i) => s + i.net, 0);
-                const grandVat = items.reduce((s, i) => s + i.vat, 0);
-                const grandTotal = items.reduce((s, i) => s + i.total, 0);
 
                 setPreviewData({
                     ...rfp,
@@ -598,12 +621,11 @@ const IssuePreviewModal = ({ rfp, issuer, onClose, onConfirm, isProcessing }) =>
                     issuerDetails: issuer,
                     rfpNumber: 'DRAFT-PREVIEW',
                     issuedAt: new Date(),
-                    items: items, // Pass calculated breakdown
-                    // Override totals for display
+                    items: finalItems, 
                     amount: grandNet,
                     vatAmount: grandVat,
                     totalAmount: grandTotal,
-                    vatApplicable: true // Always true to force template to show columns
+                    vatApplicable: grandVat > 0 
                 });
 
             } catch (e) {
@@ -643,7 +665,7 @@ const IssuePreviewModal = ({ rfp, issuer, onClose, onConfirm, isProcessing }) =>
                         Cancel & Edit
                     </button>
                     <button
-                        onClick={() => onConfirm(previewData)} // Pass calculated data back
+                        onClick={() => onConfirm(previewData)} 
                         className="inline-flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
                         disabled={isProcessing || calculating}
                     >
@@ -663,19 +685,16 @@ const PendingRFPs = () => {
     const [issuers, setIssuers] = useState([]);
     const [issuerDetailsMap, setIssuerDetailsMap] = useState({});
 
-    // Track selected issuer per RFP row
     const [selectedIssuers, setSelectedIssuers] = useState({});
 
     const [selectedRfpForUpdate, setSelectedRfpForUpdate] = useState(null);
     const [showManualCreate, setShowManualCreate] = useState(false);
 
-    // Issue Workflow State
     const [rfpToIssue, setRfpToIssue] = useState(null);
     const [processingIssue, setProcessingIssue] = useState(false);
     const [finalizedRfpForPrint, setFinalizedRfpForPrint] = useState(null);
 
     useEffect(() => {
-        // Fetch Issuers
         const fetchIssuers = async () => {
             try {
                 const settingsRef = doc(db, 'settings', 'rfp_issuers');
@@ -706,15 +725,26 @@ const PendingRFPs = () => {
         };
         fetchIssuers();
 
-        // Fetch RFPs
         const q = query(collection(db, 'rfps'), where('status', '==', 'Pending'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const rfpList = snapshot.docs.map(doc => {
                 const data = doc.data();
                 const amount = parseFloat(data.amount) || 0;
-                const vatRate = data.vatApplicable ? 0.18 : 0;
-                const vatAmount = amount * vatRate;
-                const totalAmount = amount + vatAmount;
+                
+                // FIX: Trust vatAmount over blindly applying 18%
+                let vatAmount = 0;
+                if (data.vatAmount !== undefined && data.vatAmount !== null) {
+                    vatAmount = parseFloat(data.vatAmount);
+                } else if (data.vatApplicable) {
+                    vatAmount = amount * 0.18;
+                }
+
+                let totalAmount = 0;
+                if (data.totalAmount !== undefined && data.totalAmount !== null) {
+                    totalAmount = parseFloat(data.totalAmount);
+                } else {
+                    totalAmount = amount + vatAmount;
+                }
 
                 let createdDate = null;
                 if (data.createdAt) {
@@ -822,8 +852,18 @@ const PendingRFPs = () => {
 
             const rfpCode = result.data.rfpCode;
 
+            // SAVE THE ITEM BREAKDOWN TO THE DATABASE
+            const rfpRef = doc(db, 'rfps', rfpToIssue.id);
+            await updateDoc(rfpRef, {
+                items: previewData.items,
+                amount: previewData.amount,
+                vatAmount: previewData.vatAmount,
+                totalAmount: previewData.totalAmount,
+                vatApplicable: previewData.vatApplicable // Explicitly mark if VAT applies overall
+            });
+
             const finalized = {
-                ...previewData, // Contains the items array we built
+                ...previewData, 
                 status: 'Issued - Open',
                 rfpNumber: rfpCode,
                 rfpCode: rfpCode,

@@ -32,6 +32,7 @@ try {
 
 const SCOPES = [
     'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/calendar.events',
     'https://www.googleapis.com/auth/gmail.send'
 ];
 
@@ -44,13 +45,14 @@ async function getAuthorizedClient(userEmail) {
         throw new Error("Service Account Key missing or invalid. Cannot authenticate with Google APIs.");
     }
 
-    const jwtClient = new google.auth.JWT(
-        serviceAccountKey.client_email,
-        null,
-        serviceAccountKey.private_key,
-        SCOPES,
-        userEmail
-    );
+    // Pass a single configuration object instead of multiple arguments
+    const jwtClient = new google.auth.JWT({
+        email: serviceAccountKey.client_email,
+        key: serviceAccountKey.private_key,
+        scopes: SCOPES,
+        subject: userEmail
+    });
+    
     await jwtClient.authorize();
     return jwtClient;
 }
