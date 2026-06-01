@@ -1,5 +1,5 @@
 // Root: src/modules/billing/UpdateRFPModal.jsx
-// Version: 6.5 - Save Breakdown Items to Database AND Honor VAT Unchecks
+// Version: 6.6 - Save Root Totals to Database alongside Items
 import React, { useState, useEffect, useMemo } from 'react';
 import { getApp } from 'firebase/app';
 import { getFirestore, doc, updateDoc, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
@@ -282,6 +282,18 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                 }
             });
 
+            // Calculate root values so they are completely synced and never 0
+            let rootAmount = 0;
+            let rootVatAmount = 0;
+            let rootTotalAmount = 0;
+
+            itemsToSave.forEach(i => {
+                rootAmount += i.net;
+                const iVat = roundUp(i.net * i.vatRate);
+                rootVatAmount += iVat;
+                rootTotalAmount += (i.net + iVat);
+            });
+
             const payload = {
                 rfpId: rfp.id,
                 description: finalDescription,
@@ -290,7 +302,11 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                 recipientAddress: formData.recipientAddress,
                 recipientVat: formData.recipientVat,
                 contactPerson: contactPerson,
-                items: itemsToSave
+                items: itemsToSave,
+                amount: rootAmount,
+                vatAmount: rootVatAmount,
+                totalAmount: rootTotalAmount,
+                vatApplicable: rootVatAmount > 0
             };
 
             if (isRevision) {

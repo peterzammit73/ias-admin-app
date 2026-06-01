@@ -1,5 +1,5 @@
 // Root: src/modules/billing/Invoices.jsx
-// Version: 17.19 - Fixed Legacy Array of Strings Collision
+// Version: 17.21 - Robust Legacy VAT Fallback (Removed unused IssuePreviewModal to keep code clean)
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
     collection,
@@ -77,9 +77,21 @@ const DocumentsModal = ({ rfp, onClose }) => {
                 const hasValidItemBreakdown = docData.items && docData.items.length > 0 && typeof docData.items[0] === 'object' && docData.items[0] !== null && 'net' in docData.items[0];
 
                 if (hasValidItemBreakdown) {
-                    vat = docData.items.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
-                    total = docData.items.reduce((s, i) => s + (parseFloat(i.total) || 0), 0);
                     amt = docData.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+                    vat = docData.items.reduce((s, i) => {
+                        if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
+                        if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
+                        const applies = docData.vatApplicable !== false;
+                        return s + (applies ? parseFloat(i.net || 0) * 0.18 : 0);
+                    }, 0);
+                    total = docData.items.reduce((s, i) => {
+                        if (i.total !== undefined && i.total !== null) return s + parseFloat(i.total);
+                        let iVat = 0;
+                        if (i.vat !== undefined && i.vat !== null) iVat = parseFloat(i.vat);
+                        else if (i.vatRate !== undefined && i.vatRate !== null) iVat = parseFloat(i.net || 0) * parseFloat(i.vatRate);
+                        else iVat = docData.vatApplicable !== false ? parseFloat(i.net || 0) * 0.18 : 0;
+                        return s + parseFloat(i.net || 0) + iVat;
+                    }, 0);
                     vatApp = vat > 0;
                 } else {
                     if (docData.totalAmount !== undefined && docData.totalAmount !== null) {
@@ -608,9 +620,21 @@ const Invoices = () => {
         const hasValidItemBreakdown = d.items && d.items.length > 0 && typeof d.items[0] === 'object' && d.items[0] !== null && 'net' in d.items[0];
 
         if (hasValidItemBreakdown) {
-            vat = d.items.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
-            total = d.items.reduce((s, i) => s + (parseFloat(i.total) || 0), 0);
             amt = d.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+            vat = d.items.reduce((s, i) => {
+                if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
+                if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
+                const applies = d.vatApplicable !== false;
+                return s + (applies ? parseFloat(i.net || 0) * 0.18 : 0);
+            }, 0);
+            total = d.items.reduce((s, i) => {
+                if (i.total !== undefined && i.total !== null) return s + parseFloat(i.total);
+                let iVat = 0;
+                if (i.vat !== undefined && i.vat !== null) iVat = parseFloat(i.vat);
+                else if (i.vatRate !== undefined && i.vatRate !== null) iVat = parseFloat(i.net || 0) * parseFloat(i.vatRate);
+                else iVat = d.vatApplicable !== false ? parseFloat(i.net || 0) * 0.18 : 0;
+                return s + parseFloat(i.net || 0) + iVat;
+            }, 0);
             vatApp = vat > 0;
         } else {
             if (d.totalAmount !== undefined && d.totalAmount !== null) {

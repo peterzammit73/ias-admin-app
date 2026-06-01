@@ -1,5 +1,5 @@
 // Root: src/modules/billing/DocumentTemplate.jsx
-// Version: 3.10 - Fixed Legacy Array of Strings Collision
+// Version: 3.12 - Dynamic VAT Calculation for Item Breakdown Display
 import React, { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '/src/firebase.js';
@@ -97,7 +97,12 @@ const DocumentTemplate = ({ data, type, subData }) => {
 
     if (hasValidItemBreakdown) {
         displayAmount = data.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
-        displayVat = data.items.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
+        displayVat = data.items.reduce((s, i) => {
+            if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
+            if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
+            const applies = data.vatApplicable !== false;
+            return s + (applies ? parseFloat(i.net || 0) * 0.18 : 0);
+        }, 0);
     } else if (data.totalAmount !== undefined && data.totalAmount !== null && Math.abs(parseFloat(data.totalAmount) - displayAmount) < 0.01) {
         displayVat = 0;
     } else if (data.vatAmount !== undefined && data.vatAmount !== null) {
@@ -127,7 +132,12 @@ const DocumentTemplate = ({ data, type, subData }) => {
         
         if (hasValidItemBreakdown) {
             rfpTotalNet = data.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
-            rfpTotalVat = data.items.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
+            rfpTotalVat = data.items.reduce((s, i) => {
+                if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
+                if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
+                const applies = data.vatApplicable !== false;
+                return s + (applies ? parseFloat(i.net || 0) * 0.18 : 0);
+            }, 0);
             rfpTotalGross = rfpTotalNet + rfpTotalVat;
         }
 
@@ -432,14 +442,22 @@ const DocumentTemplate = ({ data, type, subData }) => {
                                 </thead>
                                 <tbody>
                                     {hasValidItemBreakdown ? (
-                                        data.items.map((item, idx) => (
-                                            <tr key={idx} className="border-b border-gray-300">
-                                                <td className="py-3 pr-4 font-normal">{item.description}</td>
-                                                <td className="py-3 text-right font-medium">{formatCurrency(item.net)}</td>
-                                                <td className="py-3 text-right text-gray-600">{item.vat > 0 ? formatCurrency(item.vat) : '-'}</td>
-                                                <td className="py-3 text-right font-bold">{formatCurrency(item.total)}</td>
-                                            </tr>
-                                        ))
+                                        data.items.map((item, idx) => {
+                                            const itemNet = parseFloat(item.net) || 0;
+                                            const itemVat = (item.vat !== undefined && item.vat !== null) ? parseFloat(item.vat) : 
+                                                            (item.vatRate !== undefined && item.vatRate !== null) ? (itemNet * parseFloat(item.vatRate)) : 
+                                                            (data.vatApplicable !== false ? itemNet * 0.18 : 0);
+                                            const itemTotal = (item.total !== undefined && item.total !== null) ? parseFloat(item.total) : (itemNet + itemVat);
+                                            
+                                            return (
+                                                <tr key={idx} className="border-b border-gray-300">
+                                                    <td className="py-3 pr-4 font-normal">{item.description}</td>
+                                                    <td className="py-3 text-right font-medium">{formatCurrency(itemNet)}</td>
+                                                    <td className="py-3 text-right text-gray-600">{itemVat > 0 ? formatCurrency(itemVat) : '-'}</td>
+                                                    <td className="py-3 text-right font-bold">{formatCurrency(itemTotal)}</td>
+                                                </tr>
+                                            );
+                                        })
                                     ) : (
                                         <tr className="border-b border-gray-300">
                                             <td className="py-3 pr-4 font-normal">Professional Services</td>

@@ -1,9 +1,9 @@
 // Root: src/modules/billing/PendingRFPs.jsx
-// Version: 4.14 - Final Safety Nets for Issue Preview
+// Version: 4.18 - Fixed mapping logic and undefined variables
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, onSnapshot, doc, deleteDoc, getDocs, updateDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../../firebase.js'; 
+import { db, functions } from '/src/firebase.js'; 
 import {
     PrinterIcon,
     PencilSquareIcon,
@@ -16,9 +16,9 @@ import {
     UserIcon,
     EyeSlashIcon
 } from '@heroicons/react/24/outline';
-import Modal from '../../components/Modal.jsx'; 
-import DocumentTemplate from './DocumentTemplate.jsx'; 
-import UpdateRFPModal from './UpdateRFPModal.jsx'; 
+import Modal from '/src/components/Modal.jsx'; 
+import DocumentTemplate from '/src/modules/billing/DocumentTemplate.jsx'; 
+import UpdateRFPModal from '/src/modules/billing/UpdateRFPModal.jsx'; 
 
 const CreateManualRFPModal = ({ isOpen, onClose }) => {
     const [loading, setLoading] = useState(false);
@@ -554,8 +554,20 @@ const IssuePreviewModal = ({ rfp, issuer, onClose, onConfirm, isProcessing }) =>
 
                 if (hasValidItemBreakdown) {
                     grandNet = finalItems.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
-                    grandVat = finalItems.reduce((s, i) => s + (parseFloat(i.vat) || 0), 0);
-                    grandTotal = finalItems.reduce((s, i) => s + (parseFloat(i.total) || 0), 0);
+                    grandVat = finalItems.reduce((s, i) => {
+                        if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
+                        if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
+                        const applies = rfp.vatApplicable !== false;
+                        return s + (applies ? parseFloat(i.net || 0) * 0.18 : 0);
+                    }, 0);
+                    grandTotal = finalItems.reduce((s, i) => {
+                        if (i.total !== undefined && i.total !== null) return s + parseFloat(i.total);
+                        let iVat = 0;
+                        if (i.vat !== undefined && i.vat !== null) iVat = parseFloat(i.vat);
+                        else if (i.vatRate !== undefined && i.vatRate !== null) iVat = parseFloat(i.net || 0) * parseFloat(i.vatRate);
+                        else iVat = rfp.vatApplicable !== false ? parseFloat(i.net || 0) * 0.18 : 0;
+                        return s + parseFloat(i.net || 0) + iVat;
+                    }, 0);
                 } else {
                     // Fallback: If no items array exists, or it is an array of legacy string IDs, rebuild it
                     finalItems = [];
@@ -728,41 +740,70 @@ const PendingRFPs = () => {
         const q = query(collection(db, 'rfps'), where('status', '==', 'Pending'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const rfpList = snapshot.docs.map(doc => {
-                const data = doc.data();
-                const amount = parseFloat(data.amount) || 0;
-                
-                // FIX: Trust vatAmount over blindly applying 18%
+                const d = doc.data();
+                let amt = parseFloat(d.amount) || 0;
                 let vatAmount = 0;
-                if (data.vatAmount !== undefined && data.vatAmount !== null) {
-                    vatAmount = parseFloat(data.vatAmount);
-                } else if (data.vatApplicable) {
-                    vatAmount = amount * 0.18;
-                }
-
                 let totalAmount = 0;
-                if (data.totalAmount !== undefined && data.totalAmount !== null) {
-                    totalAmount = parseFloat(data.totalAmount);
+                let vatApp = d.vatApplicable !== false;
+
+                // 1. If it has a valid item breakdown, calculate it perfectly from the items to ensure row accuracy
+                const hasValidItemBreakdown = d.items && d.items.length > 0 && typeof d.items[0] === 'object' && d.items[0] !== null && 'net' in d.items[0];
+
+                if (hasValidItemBreakdown) {
+                    amt = d.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+                    vatAmount = d.items.reduce((s, i) => {
+                        if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
+                        if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
+                        return s + (d.vatApplicable !== false ? parseFloat(i.net || 0) * 0.18 : 0);
+                    }, 0);
+                    totalAmount = d.items.reduce((s, i) => {
+                        if (i.total !== undefined && i.total !== null) return s + parseFloat(i.total);
+                        let iVat = 0;
+                        if (i.vat !== undefined && i.vat !== null) iVat = parseFloat(i.vat);
+                        else if (i.vatRate !== undefined && i.vatRate !== null) iVat = parseFloat(i.net || 0) * parseFloat(i.vatRate);
+                        else iVat = d.vatApplicable !== false ? parseFloat(i.net || 0) * 0.18 : 0;
+                        return s + parseFloat(i.net || 0) + iVat;
+                    }, 0);
+                    vatApp = vatAmount > 0;
                 } else {
-                    totalAmount = amount + vatAmount;
+                    // 2. Fallback to explicitly defined DB fields (handles valid stored amounts)
+                    if (d.vatAmount !== undefined && d.vatAmount !== null) {
+                        vatAmount = parseFloat(d.vatAmount);
+                        vatApp = vatAmount > 0;
+                    } else if (d.vatApplicable !== false) {
+                        vatAmount = amt * 0.18;
+                        vatApp = true;
+                    } else {
+                        vatAmount = 0;
+                        vatApp = false;
+                    }
+
+                    if (d.totalAmount !== undefined && d.totalAmount !== null) {
+                        totalAmount = parseFloat(d.totalAmount);
+                    } else {
+                        totalAmount = amt + vatAmount;
+                    }
                 }
 
                 let createdDate = null;
-                if (data.createdAt) {
-                    if (data.createdAt.toDate) {
-                        createdDate = data.createdAt.toDate();
-                    } else if (data.createdAt.seconds) {
-                        createdDate = new Date(data.createdAt.seconds * 1000);
-                    } else if (typeof data.createdAt === 'string' || typeof data.createdAt === 'number') {
-                        createdDate = new Date(data.createdAt);
+                if (d.createdAt) {
+                    if (d.createdAt.toDate) {
+                        createdDate = d.createdAt.toDate();
+                    } else if (d.createdAt.seconds) {
+                        createdDate = new Date(d.createdAt.seconds * 1000);
+                    } else if (typeof d.createdAt === 'string' || typeof d.createdAt === 'number') {
+                        createdDate = new Date(d.createdAt);
                     }
                 }
                 if (createdDate && isNaN(createdDate.getTime())) createdDate = null;
 
                 return {
                     id: doc.id,
-                    ...data,
+                    ...d,
+                    amount: amt,
                     vatAmount,
                     totalAmount,
+                    vatApplicable: vatApp,
                     createdDateObj: createdDate
                 };
             });
