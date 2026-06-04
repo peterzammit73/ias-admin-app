@@ -1,5 +1,5 @@
 // Root: src/modules/billing/Invoices.jsx
-// Version: 17.21 - Robust Legacy VAT Fallback (Removed unused IssuePreviewModal to keep code clean)
+// Version: 17.22 - Restored and Fixed Array/Map Parsing
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
     collection,
@@ -74,17 +74,18 @@ const DocumentsModal = ({ rfp, onClose }) => {
                 let total = 0;
                 let vatApp = docData.vatApplicable;
 
-                const hasValidItemBreakdown = docData.items && docData.items.length > 0 && typeof docData.items[0] === 'object' && docData.items[0] !== null && 'net' in docData.items[0];
+                const itemsArray = Array.isArray(docData.items) ? docData.items : (docData.items ? Object.values(docData.items) : []);
+                const hasValidItemBreakdown = itemsArray.length > 0 && typeof itemsArray[0] === 'object' && itemsArray[0] !== null && 'net' in itemsArray[0];
 
                 if (hasValidItemBreakdown) {
-                    amt = docData.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
-                    vat = docData.items.reduce((s, i) => {
+                    amt = itemsArray.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+                    vat = itemsArray.reduce((s, i) => {
                         if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
                         if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
                         const applies = docData.vatApplicable !== false;
                         return s + (applies ? parseFloat(i.net || 0) * 0.18 : 0);
                     }, 0);
-                    total = docData.items.reduce((s, i) => {
+                    total = itemsArray.reduce((s, i) => {
                         if (i.total !== undefined && i.total !== null) return s + parseFloat(i.total);
                         let iVat = 0;
                         if (i.vat !== undefined && i.vat !== null) iVat = parseFloat(i.vat);
@@ -94,7 +95,7 @@ const DocumentsModal = ({ rfp, onClose }) => {
                     }, 0);
                     vatApp = vat > 0;
                 } else {
-                    if (docData.totalAmount !== undefined && docData.totalAmount !== null) {
+                    if (parseFloat(docData.totalAmount) > 0.01) {
                         total = parseFloat(docData.totalAmount);
                         if (Math.abs(total - amt) < 0.01) {
                             vat = 0;
@@ -118,6 +119,19 @@ const DocumentsModal = ({ rfp, onClose }) => {
                     } else {
                         vat = vatApp ? amt * 0.18 : 0;
                         total = amt + vat;
+                    }
+
+                    // SAFETY: Re-calculate Paid Total inside modal normalization to prevent ghost documents
+                    // Only trust invoicedAmount if the status is explicitly Paid/Closed
+                    let modalInv = (docData.payments && Object.keys(docData.payments).length > 0)
+                        ? Object.values(docData.payments).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0)
+                        : ((docData.status === 'Paid' || docData.status === 'Closed' || docData.status === 'Paid / Closed') ? (parseFloat(docData.invoicedAmount) || 0) : 0);
+
+                    // FALLBACK: If total is still 0 but amount is not, calculate it
+                    if (total <= 0.01 && amt > 0) {
+                        vat = docData.vatApplicable !== false ? amt * 0.18 : 0;
+                        total = amt + vat;
+                        vatApp = vat > 0;
                     }
                 }
 
@@ -262,14 +276,20 @@ const DocumentsModal = ({ rfp, onClose }) => {
         }
         if (currentRfp.payments) {
             Object.entries(currentRfp.payments).forEach(([key, p]) => {
-                const dateObj = getDate(p.date);
-                list.push({ uniqueKey: `PARTIAL_${key}`, label: `[${formatDate(dateObj)}] Invoice ${key} (€${p.amount.toLocaleString()})`, type: 'PARTIAL', data: currentRfp, subData: { ...p, ref: key }, dateObj, styleClass: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' });
+                const amt = parseFloat(p.amount) || 0;
+                if (amt > 0.01) {
+                    const dateObj = getDate(p.date);
+                    list.push({ uniqueKey: `PARTIAL_${key}`, label: `[${formatDate(dateObj)}] Invoice ${key} (€${amt.toLocaleString()})`, type: 'PARTIAL', data: currentRfp, subData: { ...p, ref: key }, dateObj, styleClass: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' });
+                }
             });
         }
         if (currentRfp.credits) {
             Object.entries(currentRfp.credits).forEach(([key, c]) => {
-                const dateObj = getDate(c.date);
-                list.push({ uniqueKey: `CREDIT_${key}`, label: `[${formatDate(dateObj)}] Credit Note ${key} (€${c.amount.toLocaleString()})`, type: 'CREDIT_NOTE', data: currentRfp, subData: { ...c, ref: key }, dateObj, styleClass: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' });
+                const amt = parseFloat(c.amount) || 0;
+                if (amt > 0.01) {
+                    const dateObj = getDate(c.date);
+                    list.push({ uniqueKey: `CREDIT_${key}`, label: `[${formatDate(dateObj)}] Credit Note ${key} (€${amt.toLocaleString()})`, type: 'CREDIT_NOTE', data: currentRfp, subData: { ...c, ref: key }, dateObj, styleClass: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' });
+                }
             });
         }
         if (currentRfp.reminders) {
@@ -406,21 +426,27 @@ const PaymentActionModal = ({ actionData, onClose, onSuccess }) => {
 
         setProcessing(true);
         try {
+            // SAFETY INITIALIZATION: If the payments or credits maps were manually deleted from the backend, 
+            // we must recreate the empty "containers" before the Cloud Function tries to write to them.
+            const rfpRef = doc(db, 'rfps', rfp.id);
+            if (!rfp.payments || !rfp.credits) {
+                await updateDoc(rfpRef, { payments: rfp.payments || {}, credits: rfp.credits || {} });
+            }
+
             const actionName = type === 'full' ? 'full_payment' : type === 'partial' ? 'partial_payment' : type === 'reverse' ? 'partial_credit' : 'issue_reminder';
             const manageFn = httpsCallable(functions, 'managePayment');
-            await manageFn({ action: actionName, rfpId: rfp.id, amount: (type === 'partial' || type === 'reverse') ? amount : null, date, releaseItems: type === 'reverse' && releaseItems });
+            // Send the explicitly calculated amount even for full payments to prevent backend fallback errors
+            await manageFn({ action: actionName, rfpId: rfp.id, amount: parseFloat(amount), date, releaseItems: type === 'reverse' && releaseItems });
 
             // AUTO-MARK AS PAID IF PARTIAL PAYMENT SETTLES THE ENTIRE REMAINING BALANCE
-            if (type === 'partial') {
-                const inputAmount = parseFloat(amount);
-                const remaining = parseFloat(rfp.remaining);
-                if (inputAmount >= remaining - 0.01) {
-                    const rfpRef = doc(db, 'rfps', rfp.id);
-                    await updateDoc(rfpRef, {
-                        status: 'Paid',
-                        paidAt: new Date(date || Date.now())
-                    });
-                }
+            const inputAmount = parseFloat(amount);
+            const remaining = parseFloat(rfp.remaining);
+            if ((type === 'partial' || type === 'full') && inputAmount >= remaining - 0.01) {
+                const rfpRef = doc(db, 'rfps', rfp.id);
+                await updateDoc(rfpRef, {
+                    status: 'Paid',
+                    paidAt: new Date(date || Date.now())
+                });
             }
 
             onSuccess();
@@ -517,7 +543,7 @@ const RfpRow = React.memo(({ rfp, isSelected, onSelect }) => {
             {/* Due (Inc VAT) */}
             <td className={`w-32 px-2 py-2 text-right font-mono border-l border-gray-100 ${isSelected ? 'text-orange-900 font-medium' : 'text-orange-800 bg-orange-50/30'}`}>€{rfp.remaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
 
-            <td className="w-12 px-2 py-2 text-center hidden sm:table-cell"><span className={`px-2 py-0.5 rounded text-[10px] font-normal uppercase border ${rfp.status === 'Paid' || rfp.status === 'Closed' ? 'bg-green-50 text-green-700 border-green-200' : rfp.status === 'Bad Debt' || rfp.status === 'Superseded' ? 'bg-gray-50 text-gray-500 border-gray-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{rfp.status.includes('Open') ? 'Open' : rfp.status}</span></td>
+            <td className="w-12 px-2 py-2 text-center hidden sm:table-cell"><span className={`px-2 py-0.5 rounded text-[10px] font-normal uppercase border ${rfp.status === 'Paid' || rfp.status === 'Closed' ? 'bg-green-50 text-green-700 border-green-200' : rfp.status === 'Partial' ? 'bg-blue-50 text-blue-700 border-blue-200' : rfp.status === 'Bad Debt' || rfp.status === 'Superseded' ? 'bg-gray-50 text-gray-500 border-gray-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{rfp.status.includes('Open') ? 'Open' : rfp.status}</span></td>
         </tr>
     );
 });
@@ -616,18 +642,19 @@ const Invoices = () => {
         let total = 0;
         let vatApp = d.vatApplicable;
 
-        // INTELLIGENT NORMALIZATION: Trust items array if it exists AND contains objects (not legacy string IDs)
-        const hasValidItemBreakdown = d.items && d.items.length > 0 && typeof d.items[0] === 'object' && d.items[0] !== null && 'net' in d.items[0];
+        // INTELLIGENT NORMALIZATION: Trust items array if it exists AND contains objects (handles both Arrays and Firestore Maps)
+        const itemsArray = Array.isArray(d.items) ? d.items : (d.items ? Object.values(d.items) : []);
+        const hasValidItemBreakdown = itemsArray.length > 0 && typeof itemsArray[0] === 'object' && itemsArray[0] !== null && 'net' in itemsArray[0];
 
         if (hasValidItemBreakdown) {
-            amt = d.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
-            vat = d.items.reduce((s, i) => {
+            amt = itemsArray.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+            vat = itemsArray.reduce((s, i) => {
                 if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
                 if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
                 const applies = d.vatApplicable !== false;
                 return s + (applies ? parseFloat(i.net || 0) * 0.18 : 0);
             }, 0);
-            total = d.items.reduce((s, i) => {
+            total = itemsArray.reduce((s, i) => {
                 if (i.total !== undefined && i.total !== null) return s + parseFloat(i.total);
                 let iVat = 0;
                 if (i.vat !== undefined && i.vat !== null) iVat = parseFloat(i.vat);
@@ -637,7 +664,7 @@ const Invoices = () => {
             }, 0);
             vatApp = vat > 0;
         } else {
-            if (d.totalAmount !== undefined && d.totalAmount !== null) {
+            if (parseFloat(d.totalAmount) > 0.01) {
                 total = parseFloat(d.totalAmount);
                 if (Math.abs(total - amt) < 0.01) {
                     vat = 0;
@@ -664,14 +691,25 @@ const Invoices = () => {
             }
         }
 
-        let inv = parseFloat(d.invoicedAmount) || 0;
-        if (inv === 0 && d.payments) inv = Object.values(d.payments).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+        // PRIORITY: Trust the payments map history over the cached total field
+        let inv = (d.payments && Object.keys(d.payments).length > 0) 
+            ? Object.values(d.payments).reduce((s, p) => s + (parseFloat(p.amount) || 0), 0)
+            : (parseFloat(d.invoicedAmount) || 0);
+            
         let cred = parseFloat(d.creditedAmount) || 0;
         if (cred === 0 && d.credits) cred = Object.values(d.credits).reduce((s, c) => s + (parseFloat(c.amount) || 0), 0);
 
-        // Calculated Ex VAT Values
-        const invExVat = vatApp && inv > 0 ? (inv / 1.18) : inv;
-        const credExVat = vatApp && cred > 0 ? (cred / 1.18) : cred;
+        // INTELLIGENT EX VAT ALLOCATION: Use actual RFP ratios for mixed VAT items
+        const invExVat = (total > 0.01) ? (inv * (amt / total)) : inv;
+        const credExVat = (total > 0.01) ? (cred * (amt / total)) : cred;
+
+        const remaining = Math.max(0, total - inv - cred);
+        let status = d.status || 'Pending';
+
+        // DYNAMIC STATUS: If payments exist and balance remains, mark as Partial visually
+        if (inv > 0.01 && remaining > 0.01 && (status === 'Issued - Open' || status === 'Issued' || status === 'Open')) {
+            status = 'Partial';
+        }
 
         return {
             id: doc.id,
@@ -684,7 +722,8 @@ const Invoices = () => {
             credited: cred, // Gross Credited
             invoicedExVat: invExVat,
             creditedExVat: credExVat,
-            remaining: Math.max(0, total - inv - cred), // Gross Remaining
+            remaining: remaining, 
+            status: status, // Use calculated status
             createdAt: d.createdAt?.toDate ? d.createdAt.toDate().getTime() : (d.createdAt || 0)
         };
     };
@@ -839,8 +878,8 @@ const Invoices = () => {
                     <div className="flex items-center gap-2 px-4 border-l border-gray-200 h-10 font-sans">
                         <button onClick={() => setViewDocsRfp(selectedRfp)} disabled={!selectedRfp || selectedRfp.status === 'Pending'} title="History & Docs" className={`p-2 rounded-lg transition-all ${selectedRfp && selectedRfp.status !== 'Pending' ? 'text-orange-600 hover:bg-orange-100 bg-white border border-orange-200 shadow-sm' : 'text-gray-300 bg-gray-50 border border-gray-100 cursor-not-allowed'}`}><DocumentDuplicateIcon className="h-6 w-6" /></button>
                         <button onClick={() => setReviseRfp(selectedRfp)} disabled={!canRevise} title="Revise" className={`p-2 rounded-lg transition-all ${canRevise ? 'text-purple-600 hover:bg-purple-100 bg-white border border-purple-200 shadow-sm' : 'text-gray-300 bg-gray-50 border border-gray-100 cursor-not-allowed'}`}><ArrowPathRoundedSquareIcon className="h-6 w-6" /></button>
-                        <button onClick={() => setPaymentAction({ rfp: selectedRfp, type: 'full' })} disabled={!canSettle} title="Settle" className={`p-2 rounded-lg transition-all ${canSettle ? 'text-green-600 hover:bg-green-100 bg-white border border-green-200 shadow-sm' : 'text-gray-300 bg-gray-50 border border-gray-100 cursor-not-allowed'}`}><CheckBadgeIcon className="h-6 w-6" /></button>
-                        <button onClick={() => setPaymentAction({ rfp: selectedRfp, type: 'partial' })} disabled={!canAction} title="Partial Pay" className={`p-2 rounded-lg transition-all ${canAction ? 'text-blue-600 hover:bg-blue-100 bg-white border border-blue-200 shadow-sm' : 'text-gray-300 bg-gray-50 border border-gray-100 cursor-not-allowed'}`}><BanknotesIcon className="h-6 w-6" /></button>
+                        <button onClick={() => setPaymentAction({ rfp: selectedRfp, type: 'full' })} disabled={!canSettle} title="Issue Final Tax Invoice" className={`p-2 rounded-lg transition-all ${canSettle ? 'text-green-600 hover:bg-green-100 bg-white border border-green-200 shadow-sm' : 'text-gray-300 bg-gray-50 border border-gray-100 cursor-not-allowed'}`}><CheckBadgeIcon className="h-6 w-6" /></button>
+                        <button onClick={() => setPaymentAction({ rfp: selectedRfp, type: 'partial' })} disabled={!canAction} title="Issue Partial Tax Invoice" className={`p-2 rounded-lg transition-all ${canAction ? 'text-blue-600 hover:bg-blue-100 bg-white border border-blue-200 shadow-sm' : 'text-gray-300 bg-gray-50 border border-gray-100 cursor-not-allowed'}`}><BanknotesIcon className="h-6 w-6" /></button>
                         <button onClick={() => setPaymentAction({ rfp: selectedRfp, type: 'reverse' })} disabled={!canAction} title="Credit Note" className={`p-2 rounded-lg transition-all ${canAction ? 'text-red-600 hover:bg-red-100 bg-white border border-red-200 shadow-sm' : 'text-gray-300 bg-gray-50 border border-gray-100 cursor-not-allowed'}`}><XCircleIcon className="h-6 w-6" /></button>
                         <button onClick={() => setPaymentAction({ rfp: selectedRfp, type: 'reminder' })} disabled={!canAction} title="Reminder" className={`p-2 rounded-lg transition-all ${canAction ? 'text-yellow-600 hover:bg-yellow-100 bg-white border border-yellow-200 shadow-sm' : 'text-gray-300 bg-gray-50 border border-gray-100 cursor-not-allowed'}`}><BellIcon className="h-6 w-6" /></button>
                         <button onClick={() => setAuditRfp(selectedRfp)} disabled={!selectedRfp} title="Audit" className={`p-2 rounded-lg transition-all ${selectedRfp ? 'text-gray-600 hover:bg-gray-100 bg-white border border-gray-200 shadow-sm' : 'text-gray-300 bg-gray-50 border border-gray-100 cursor-not-allowed'}`}><CalculatorIcon className="h-6 w-6" /></button>

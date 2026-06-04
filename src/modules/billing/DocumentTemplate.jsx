@@ -1,5 +1,5 @@
 // Root: src/modules/billing/DocumentTemplate.jsx
-// Version: 3.12 - Dynamic VAT Calculation for Item Breakdown Display
+// Version: 3.13 - Fixed and Restored Array/Map Support
 import React, { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '/src/firebase.js';
@@ -92,12 +92,13 @@ const DocumentTemplate = ({ data, type, subData }) => {
     let displayAmount = parseFloat(data.amount || 0);
     let displayVat = 0;
 
-    // Strict VAT resolution: Ensure items array contains objects, not legacy strings
-    const hasValidItemBreakdown = data.items && data.items.length > 0 && typeof data.items[0] === 'object' && data.items[0] !== null && 'net' in data.items[0];
+    // Strict VAT resolution: Ensure items array contains objects, handling both Arrays and Firestore Maps
+    const itemsArray = Array.isArray(data.items) ? data.items : (data.items ? Object.values(data.items) : []);
+    const hasValidItemBreakdown = itemsArray.length > 0 && typeof itemsArray[0] === 'object' && itemsArray[0] !== null && 'net' in itemsArray[0];
 
     if (hasValidItemBreakdown) {
-        displayAmount = data.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
-        displayVat = data.items.reduce((s, i) => {
+        displayAmount = itemsArray.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+        displayVat = itemsArray.reduce((s, i) => {
             if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
             if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
             const applies = data.vatApplicable !== false;
@@ -131,8 +132,8 @@ const DocumentTemplate = ({ data, type, subData }) => {
         let rfpTotalVat = parseFloat(data.vatAmount || 0);
         
         if (hasValidItemBreakdown) {
-            rfpTotalNet = data.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
-            rfpTotalVat = data.items.reduce((s, i) => {
+            rfpTotalNet = itemsArray.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+            rfpTotalVat = itemsArray.reduce((s, i) => {
                 if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
                 if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
                 const applies = data.vatApplicable !== false;
@@ -442,7 +443,7 @@ const DocumentTemplate = ({ data, type, subData }) => {
                                 </thead>
                                 <tbody>
                                     {hasValidItemBreakdown ? (
-                                        data.items.map((item, idx) => {
+                                        itemsArray.map((item, idx) => {
                                             const itemNet = parseFloat(item.net) || 0;
                                             const itemVat = (item.vat !== undefined && item.vat !== null) ? parseFloat(item.vat) : 
                                                             (item.vatRate !== undefined && item.vatRate !== null) ? (itemNet * parseFloat(item.vatRate)) : 

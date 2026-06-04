@@ -208,6 +208,19 @@ const CreateRFPModal = ({ show, onClose, onSuccess, preSelectedItems, projectsMa
              });
         });
 
+        // Calculate root totals to ensure they are never 0 in the database
+        let rootAmount = 0;
+        let rootVatAmount = 0;
+        let rootTotalAmount = 0;
+        const roundUp = (num) => Math.ceil(num * 100) / 100;
+
+        itemsToSave.forEach(i => {
+            rootAmount += i.net;
+            const iVat = roundUp(i.net * i.vatRate);
+            rootVatAmount += iVat;
+            rootTotalAmount += (i.net + iVat);
+        });
+
         try {
             const createFn = httpsCallable(functions, 'createRFP');
             await createFn({
@@ -218,6 +231,13 @@ const CreateRFPModal = ({ show, onClose, onSuccess, preSelectedItems, projectsMa
                 description, 
                 isIndependent: false,
                 items: itemsToSave, 
+                amount: rootAmount,
+                vatAmount: rootVatAmount,
+                totalAmount: rootTotalAmount,
+                outstandingBalance: rootTotalAmount, // Ensure balance is initialized
+                vatApplicable: rootVatAmount > 0,
+                payments: {}, // Initialize maps to prevent backend write failures
+                credits: {},  // Initialize maps to prevent backend write failures
                 timeIds: timeItemsIds, 
                 costIds: selectedCosts, 
                 writeOffCostIds: costsToWriteOff, 

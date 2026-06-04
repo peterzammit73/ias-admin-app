@@ -306,7 +306,10 @@ const UpdateRFPModal = ({ isOpen, onClose, rfp, mode = 'edit' }) => {
                 amount: rootAmount,
                 vatAmount: rootVatAmount,
                 totalAmount: rootTotalAmount,
-                vatApplicable: rootVatAmount > 0
+                outstandingBalance: rootTotalAmount - (parseFloat(rfp.invoicedAmount) || 0), // Re-sync balance
+                vatApplicable: rootVatAmount > 0,
+                payments: rfp.payments || {}, // Preserve existing or initialize
+                credits: rfp.credits || {}    // Preserve existing or initialize
             };
 
             if (isRevision) {

@@ -1,5 +1,5 @@
 // Root: src/modules/billing/PendingRFPs.jsx
-// Version: 4.18 - Fixed mapping logic and undefined variables
+// Version: 4.19 - Restored and Fixed Array/Map Parsing
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, onSnapshot, doc, deleteDoc, getDocs, updateDoc, getDoc, writeBatch } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -279,6 +279,19 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
              });
         });
 
+        // Calculate root totals to ensure they are never 0 in the database
+        let rootAmount = 0;
+        let rootVatAmount = 0;
+        let rootTotalAmount = 0;
+        const roundUp = (num) => Math.ceil(num * 100) / 100;
+
+        itemsToSave.forEach(i => {
+            rootAmount += i.net;
+            const iVat = roundUp(i.net * i.vatRate);
+            rootVatAmount += iVat;
+            rootTotalAmount += (i.net + iVat);
+        });
+
         try {
             const createFn = httpsCallable(functions, 'createRFP');
             await createFn({
@@ -289,6 +302,13 @@ const CreateManualRFPModal = ({ isOpen, onClose }) => {
                 description,
                 isIndependent: true,
                 items: itemsToSave,
+                amount: rootAmount,
+                vatAmount: rootVatAmount,
+                totalAmount: rootTotalAmount,
+                outstandingBalance: rootTotalAmount, // Ensure balance is initialized
+                vatApplicable: rootVatAmount > 0,
+                payments: {}, // Initialize maps to prevent backend write failures
+                credits: {},  // Initialize maps to prevent backend write failures
                 timeIds: [], 
                 costIds: costIds,
                 writeOffCostIds: writeOffCostIds,
@@ -545,7 +565,7 @@ const IssuePreviewModal = ({ rfp, issuer, onClose, onConfirm, isProcessing }) =>
         const buildPreview = async () => {
             setCalculating(true);
             try {
-                let finalItems = Array.isArray(rfp.items) ? rfp.items : [];
+                let finalItems = Array.isArray(rfp.items) ? rfp.items : (rfp.items ? Object.values(rfp.items) : []);
                 const hasValidItemBreakdown = finalItems.length > 0 && typeof finalItems[0] === 'object' && finalItems[0] !== null && 'net' in finalItems[0];
                 
                 let grandNet = 0;
@@ -746,17 +766,18 @@ const PendingRFPs = () => {
                 let totalAmount = 0;
                 let vatApp = d.vatApplicable !== false;
 
-                // 1. If it has a valid item breakdown, calculate it perfectly from the items to ensure row accuracy
-                const hasValidItemBreakdown = d.items && d.items.length > 0 && typeof d.items[0] === 'object' && d.items[0] !== null && 'net' in d.items[0];
+                // 1. If it has a valid item breakdown, calculate it perfectly from the items (Handles both Arrays and Maps)
+                const itemsArray = Array.isArray(d.items) ? d.items : (d.items ? Object.values(d.items) : []);
+                const hasValidItemBreakdown = itemsArray.length > 0 && typeof itemsArray[0] === 'object' && itemsArray[0] !== null && 'net' in itemsArray[0];
 
                 if (hasValidItemBreakdown) {
-                    amt = d.items.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
-                    vatAmount = d.items.reduce((s, i) => {
+                    amt = itemsArray.reduce((s, i) => s + (parseFloat(i.net) || 0), 0);
+                    vatAmount = itemsArray.reduce((s, i) => {
                         if (i.vat !== undefined && i.vat !== null) return s + parseFloat(i.vat);
                         if (i.vatRate !== undefined && i.vatRate !== null) return s + (parseFloat(i.net || 0) * parseFloat(i.vatRate));
                         return s + (d.vatApplicable !== false ? parseFloat(i.net || 0) * 0.18 : 0);
                     }, 0);
-                    totalAmount = d.items.reduce((s, i) => {
+                    totalAmount = itemsArray.reduce((s, i) => {
                         if (i.total !== undefined && i.total !== null) return s + parseFloat(i.total);
                         let iVat = 0;
                         if (i.vat !== undefined && i.vat !== null) iVat = parseFloat(i.vat);
@@ -778,7 +799,7 @@ const PendingRFPs = () => {
                         vatApp = false;
                     }
 
-                    if (d.totalAmount !== undefined && d.totalAmount !== null) {
+                    if (d.totalAmount !== undefined && d.totalAmount !== null && parseFloat(d.totalAmount) > 0.01) {
                         totalAmount = parseFloat(d.totalAmount);
                     } else {
                         totalAmount = amt + vatAmount;
@@ -900,7 +921,10 @@ const PendingRFPs = () => {
                 amount: previewData.amount,
                 vatAmount: previewData.vatAmount,
                 totalAmount: previewData.totalAmount,
-                vatApplicable: previewData.vatApplicable // Explicitly mark if VAT applies overall
+                outstandingBalance: previewData.totalAmount, // Sync the balance field
+                vatApplicable: previewData.vatApplicable, // Explicitly mark if VAT applies overall
+                payments: {}, // Ensure payment map is initialized for backend
+                credits: {}   // Ensure credit map is initialized for backend
             });
 
             const finalized = {

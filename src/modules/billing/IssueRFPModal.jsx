@@ -2,7 +2,7 @@
 // Version: 2.5 - Added Client Auto-Fill Logic on load & Fixed Import Paths
 import React, { useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
-import { getDocs, query, collection, getDoc, doc } from 'firebase/firestore';
+import { getDocs, query, collection, getDoc, doc, updateDoc } from 'firebase/firestore';
 import { functions, db } from '/src/firebase.js';
 import Modal from '/src/components/Modal.jsx';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
@@ -85,6 +85,13 @@ const IssueRFPModal = ({ isOpen, onClose, rfp }) => {
 
             // Result should contain the new rfpCode
             const newRfpCode = result.data.rfpCode;
+
+            // INITIALIZE MAPS: Ensure payment/credit containers exist for the backend logic
+            const rfpRef = doc(db, 'rfps', rfp.id);
+            await updateDoc(rfpRef, {
+                payments: rfp.payments || {},
+                credits: rfp.credits || {}
+            });
 
             // Fetch Issuer Details again to pass to template immediately
             const settingsRef = doc(db, 'settings', 'rfp_issuers');
